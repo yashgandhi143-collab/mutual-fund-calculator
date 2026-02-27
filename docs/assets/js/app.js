@@ -40,6 +40,47 @@ function calculateSIP(P, annualRate, years) {
 }
 
 /**
+ * Calculate Top-Up SIP Future Value (year-by-year simulation)
+ * Each year the monthly SIP amount is increased by topUpRate %
+ * @param {number} P - Initial monthly investment amount
+ * @param {number} annualRate - Annual return rate in %
+ * @param {number} years - Investment duration in years
+ * @param {number} topUpRate - Annual top-up rate in %
+ * @returns {object} { futureValue, totalInvested, estimatedReturns, yearlyBreakdown }
+ *   yearlyBreakdown: Array of { year, monthlySIP, yearlyInvested, corpusAtEndOfYear }
+ */
+function calculateTopUpSIP(P, annualRate, years, topUpRate) {
+  const r = annualRate / 100 / 12;
+  let corpus = 0;
+  let totalInvested = 0;
+  const yearlyBreakdown = [];
+
+  for (let y = 1; y <= years; y++) {
+    const monthlySIP = Math.round(P * Math.pow(1 + topUpRate / 100, y - 1));
+    let yearlyInvested = 0;
+
+    for (let m = 0; m < 12; m++) {
+      corpus = (corpus + monthlySIP) * (1 + r);
+      yearlyInvested += monthlySIP;
+    }
+
+    totalInvested += yearlyInvested;
+    corpus = Math.round(corpus);
+
+    yearlyBreakdown.push({
+      year: y,
+      monthlySIP: monthlySIP,
+      yearlyInvested: yearlyInvested,
+      corpusAtEndOfYear: corpus
+    });
+  }
+
+  const futureValue = corpus;
+  const estimatedReturns = futureValue - totalInvested;
+  return { futureValue, totalInvested, estimatedReturns, yearlyBreakdown };
+}
+
+/**
  * Calculate Lumpsum Future Value
  * Formula: P x (1 + r)^n
  * @param {number} P - One-time investment amount
