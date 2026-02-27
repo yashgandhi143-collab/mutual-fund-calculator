@@ -350,7 +350,7 @@ hr {
 }
 
 /* Total Value card — success gradient (top-up) */
-.result-card.bg-success {
+.result-card.bg-success:not(.bg-opacity-10) {
   background: linear-gradient(135deg, var(--color-success) 0%, #065F46 100%) !important;
   border: none !important;
 }
@@ -363,7 +363,7 @@ hr {
 
 /* Inflation success card (step-up SIP) */
 .result-card.border-success.bg-success.bg-opacity-10 {
-  background-color: var(--color-success-light) !important;
+  background: var(--color-success-light) !important;
   border: 1.5px solid rgba(5,150,105,0.3) !important;
 }
 
