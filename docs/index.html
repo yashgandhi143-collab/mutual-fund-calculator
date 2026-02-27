@@ -4,333 +4,111 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Wealth Builder — Mutual Fund Calculators</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
-    :root {
-      --navy-deep: #0D1B4B;
-      --navy-primary: #1A237E;
-      --gold: #D4AF37;
-      --gold-light: #F5E6A3;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%);
-      min-height: 100vh;
-      color: #fff;
-    }
-
-    /* Navbar */
-    .navbar {
-      background: #0D1B4B;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-      min-height: 64px;
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-    }
-    .navbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      text-decoration: none;
-    }
-    .navbar-brand .brand-icon {
-      color: var(--gold);
-      font-size: 1.6rem;
-    }
-    .navbar-brand .brand-name {
-      color: var(--gold);
-      font-weight: 800;
-      font-size: 1.2rem;
-      letter-spacing: 0.5px;
-    }
-    .navbar-brand .brand-sub {
-      color: rgba(212, 175, 55, 0.6);
-      font-size: 0.75rem;
-      font-weight: 400;
-      margin-left: 0.25rem;
-      align-self: flex-end;
-      padding-bottom: 1px;
-    }
-
-    /* Hero */
-    .hero {
-      text-align: center;
-      padding: 5rem 1.5rem 4rem;
-    }
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 1rem;
-      letter-spacing: -0.5px;
-    }
-    .hero p {
-      font-size: 1.05rem;
-      color: rgba(255,255,255,0.65);
-      max-width: 520px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.7;
-    }
-
-    /* Wealth Forecast Bar */
-    .forecast-bar-wrap {
-      max-width: 600px;
-      margin: 0 auto;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(212,175,55,0.25);
-      border-radius: 16px;
-      padding: 1.5rem 2rem;
-    }
-    .forecast-bar-labels {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 0.6rem;
-    }
-    .forecast-bar-labels .label-today {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.5);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .forecast-bar-labels .label-end {
-      text-align: right;
-    }
-    .forecast-bar-labels .label-end .years {
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: block;
-    }
-    .forecast-bar-labels .label-end .amount {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--gold);
-    }
-    .forecast-track {
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      height: 14px;
-      overflow: hidden;
-    }
-    .forecast-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #B8860B 0%, var(--gold) 60%, var(--gold-light) 100%);
-      width: 0%;
-      animation: fillBar 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-    }
-    @keyframes fillBar {
-      from { width: 0%; }
-      to   { width: 75%; }
-    }
-    .forecast-note {
-      margin-top: 0.75rem;
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.4);
-      text-align: center;
-    }
-
-    /* Cards section */
-    .cards-section {
-      padding: 3rem 1.5rem 4rem;
-    }
-    .cards-grid {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 1.5rem;
-    }
-
-    /* Individual card */
-    .calc-card {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px;
-      padding: 2rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-      backdrop-filter: blur(6px);
-    }
-    .calc-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 40px rgba(212,175,55,0.18), 0 2px 12px rgba(0,0,0,0.3);
-      border-color: var(--gold);
-    }
-
-    .card-icon-wrap {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: rgba(212,175,55,0.12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.1rem;
-    }
-    .card-icon-wrap i {
-      font-size: 1.75rem;
-      color: var(--gold);
-    }
-
-    .calc-card h5 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
-    .calc-card p {
-      font-size: 0.875rem;
-      color: rgba(255,255,255,0.55);
-      line-height: 1.6;
-      flex: 1;
-      margin-bottom: 1.25rem;
-    }
-
-    /* Gold CTA button */
-    .btn-gold {
-      display: inline-block;
-      background: linear-gradient(135deg, #B8860B 0%, var(--gold) 60%, #e8c84a 100%);
-      color: #0D1B4B;
-      font-size: 0.875rem;
-      font-weight: 700;
-      padding: 0.55rem 1.4rem;
-      border-radius: 8px;
-      text-decoration: none;
-      letter-spacing: 0.3px;
-      transition: opacity 0.2s ease, transform 0.15s ease;
-    }
-    .btn-gold:hover {
-      opacity: 0.9;
-      transform: scale(1.03);
-    }
-
-    /* Footer */
-    .site-footer {
-      background: #0D1B4B;
-      border-top: 1px solid rgba(212,175,55,0.15);
-      text-align: center;
-      padding: 1.4rem 1rem;
-      font-size: 0.82rem;
-      color: rgba(255,255,255,0.55);
-    }
-    .site-footer a {
-      color: var(--gold);
-      text-decoration: none;
-    }
-    .site-footer a:hover {
-      text-decoration: underline;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); background-attachment: fixed; }
+    a { text-decoration: none; }
+    @keyframes fillBar { from { width: 0%; } to { width: 75%; } }
+    .calc-card { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+    .calc-card:hover { transform: translateY(-6px); box-shadow: 0 8px 32px rgba(212,175,55,0.2); border-color: rgba(212,175,55,0.5) !important; }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
-  <nav class="navbar">
-    <div style="max-width:1100px; width:100%; margin:0 auto; display:flex; align-items:center;">
-      <a href="index.html" class="navbar-brand">
-        <i class="ph ph-chart-line-up brand-icon"></i>
-        <span class="brand-name">Wealth Builder</span>
-        <span class="brand-sub">Mutual Fund Calculators</span>
-      </a>
-    </div>
+  <nav style="background:#0D1B4B;height:64px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid rgba(212,175,55,0.3);">
+    <a href="index.html" style="display:flex;align-items:center;">
+      <i class="ph ph-chart-line-up" style="color:#D4AF37;font-size:1.5rem;margin-right:8px;"></i>
+      <span style="color:#D4AF37;font-weight:700;font-size:1.2rem;">Wealth Builder</span>
+      <span style="color:rgba(212,175,55,0.6);font-size:0.85rem;margin-left:12px;">Mutual Fund Calculators</span>
+    </a>
   </nav>
 
   <!-- Hero -->
-  <section class="hero">
-    <h1>Build Your Financial Legacy</h1>
-    <p>Professional-grade investment calculators with rich behavioral insights.</p>
+  <section style="padding:60px 24px 40px;text-align:center;">
+    <h1 style="color:#fff;font-size:2.5rem;font-weight:800;margin-bottom:12px;">Build Your Financial Legacy</h1>
+    <p style="color:rgba(255,255,255,0.7);font-size:1.05rem;margin-bottom:32px;">Professional-grade investment calculators with rich behavioral insights.</p>
 
     <!-- 10-Year Wealth Forecast Bar -->
-    <div class="forecast-bar-wrap">
-      <div class="forecast-bar-labels">
-        <span class="label-today">Today</span>
-        <div class="label-end">
-          <span class="years">10 Years</span>
-          <span class="amount">₹11,61,695</span>
+    <div style="max-width:600px;margin:0 auto;background:rgba(255,255,255,0.07);border:1px solid rgba(212,175,55,0.3);border-radius:16px;padding:20px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="color:rgba(255,255,255,0.6);font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;">TODAY</span>
+        <div style="text-align:right;">
+          <div style="color:rgba(255,255,255,0.6);font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;">10 YEARS</div>
+          <div style="color:#D4AF37;font-size:1.4rem;font-weight:800;">₹11,61,695</div>
         </div>
       </div>
-      <div class="forecast-track">
-        <div class="forecast-fill"></div>
+      <div style="height:10px;background:rgba(255,255,255,0.1);border-radius:9999px;overflow:hidden;">
+        <div style="height:100%;width:0%;background:linear-gradient(90deg,#B8860B,#D4AF37);border-radius:9999px;animation:fillBar 1.8s ease-out forwards;"></div>
       </div>
-      <p class="forecast-note">Based on ₹5,000/month SIP @ 12% p.a.</p>
+      <p style="text-align:center;margin-top:10px;color:rgba(255,255,255,0.5);font-size:0.8rem;">Based on ₹5,000/month SIP @ 12% p.a.</p>
     </div>
   </section>
 
   <!-- Calculator Cards -->
-  <section class="cards-section">
-    <div class="cards-grid">
+  <section style="padding:48px 24px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:960px;margin:0 auto;">
 
       <!-- SIP Wealth Forecast -->
       <div class="calc-card">
-        <div class="card-icon-wrap">
-          <i class="ph ph-coins"></i>
+        <div style="width:64px;height:64px;background:rgba(212,175,55,0.15);border:1.5px solid rgba(212,175,55,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <i class="ph ph-coins" style="color:#D4AF37;font-size:1.75rem;"></i>
         </div>
-        <h5>SIP Wealth Forecast</h5>
-        <p>Calculate the future value of your Systematic Investment Plan and visualise wealth growth over time.</p>
-        <a href="sip-calculator/index.html" class="btn-gold">Open Calculator</a>
+        <h5 style="color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:8px;">SIP Wealth Forecast</h5>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin-bottom:20px;flex:1;">Calculate the future value of your Systematic Investment Plan and visualise wealth growth over time.</p>
+        <a href="sip-calculator/index.html" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4AF37);color:#0D1B4B;font-weight:700;font-size:0.875rem;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Calculator</a>
       </div>
 
       <!-- Lumpsum Growth Planner -->
       <div class="calc-card">
-        <div class="card-icon-wrap">
-          <i class="ph ph-package"></i>
+        <div style="width:64px;height:64px;background:rgba(212,175,55,0.15);border:1.5px solid rgba(212,175,55,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <i class="ph ph-package" style="color:#D4AF37;font-size:1.75rem;"></i>
         </div>
-        <h5>Lumpsum Growth Planner</h5>
-        <p>Project returns on a one-time lumpsum mutual fund investment with compounding analysis.</p>
-        <a href="lumpsum-calculator/index.html" class="btn-gold">Open Calculator</a>
+        <h5 style="color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:8px;">Lumpsum Growth Planner</h5>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin-bottom:20px;flex:1;">Project returns on a one-time lumpsum investment with compounding analysis.</p>
+        <a href="lumpsum-calculator/index.html" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4AF37);color:#0D1B4B;font-weight:700;font-size:0.875rem;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Calculator</a>
       </div>
 
-      <!-- Retirement Income Planner (SWP) -->
+      <!-- Retirement Income Planner -->
       <div class="calc-card">
-        <div class="card-icon-wrap">
-          <i class="ph ph-arrows-counter-clockwise"></i>
+        <div style="width:64px;height:64px;background:rgba(212,175,55,0.15);border:1.5px solid rgba(212,175,55,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <i class="ph ph-arrows-counter-clockwise" style="color:#D4AF37;font-size:1.75rem;"></i>
         </div>
-        <h5>Retirement Income Planner</h5>
-        <p>Plan your Systematic Withdrawal Plan — know how long your corpus lasts and optimise withdrawals.</p>
-        <a href="swp-calculator/index.html" class="btn-gold">Open Calculator</a>
+        <h5 style="color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:8px;">Retirement Income Planner</h5>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin-bottom:20px;flex:1;">Plan your Systematic Withdrawal Plan — know how long your corpus lasts.</p>
+        <a href="swp-calculator/index.html" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4AF37);color:#0D1B4B;font-weight:700;font-size:0.875rem;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Calculator</a>
       </div>
 
       <!-- Portfolio Optimizer (STP) -->
       <div class="calc-card">
-        <div class="card-icon-wrap">
-          <i class="ph ph-shuffle"></i>
+        <div style="width:64px;height:64px;background:rgba(212,175,55,0.15);border:1.5px solid rgba(212,175,55,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <i class="ph ph-shuffle" style="color:#D4AF37;font-size:1.75rem;"></i>
         </div>
-        <h5>Portfolio Optimizer (STP)</h5>
-        <p>Model a Systematic Transfer Plan from debt to equity for a risk-balanced wealth transition strategy.</p>
-        <a href="stp-calculator/index.html" class="btn-gold">Open Calculator</a>
+        <h5 style="color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:8px;">Portfolio Optimizer (STP)</h5>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin-bottom:20px;flex:1;">Model a Systematic Transfer Plan from debt to equity for optimised returns.</p>
+        <a href="stp-calculator/index.html" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4AF37);color:#0D1B4B;font-weight:700;font-size:0.875rem;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Calculator</a>
       </div>
 
       <!-- CAGR Calculator -->
       <div class="calc-card">
-        <div class="card-icon-wrap">
-          <i class="ph ph-chart-bar"></i>
+        <div style="width:64px;height:64px;background:rgba(212,175,55,0.15);border:1.5px solid rgba(212,175,55,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <i class="ph ph-chart-bar" style="color:#D4AF37;font-size:1.75rem;"></i>
         </div>
-        <h5>CAGR Calculator</h5>
-        <p>Find the Compound Annual Growth Rate of any investment and benchmark it against market indices.</p>
-        <a href="cagr-calculator/index.html" class="btn-gold">Open Calculator</a>
+        <h5 style="color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:8px;">CAGR Calculator</h5>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin-bottom:20px;flex:1;">Find the Compound Annual Growth Rate and benchmark against market indices.</p>
+        <a href="cagr-calculator/index.html" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#D4AF37);color:#0D1B4B;font-weight:700;font-size:0.875rem;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Calculator</a>
       </div>
 
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="site-footer">
-    <span>© 2026 Wealth Builder — Licensed under <a href="../LICENSE" target="_blank">MIT License</a> · Free to reuse with attribution.</span>
+  <footer style="background:#0D1B4B;border-top:1px solid rgba(212,175,55,0.2);padding:20px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8rem;">
+    © 2026 Wealth Builder — Licensed under <a href="../LICENSE" style="color:#D4AF37;text-decoration:none;">MIT License</a> · Free to reuse with attribution.
   </footer>
 
   <script src="assets/js/app.js"></script>
