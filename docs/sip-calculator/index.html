@@ -167,6 +167,53 @@
           </div>
         </div>
 
+        <hr class="mt-4" />
+
+        <!-- Inflation-Adjusted Toggle -->
+        <div class="mb-3 mt-2">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="inflationToggle" role="switch">
+            <label class="form-check-label fw-semibold" for="inflationToggle">
+              🌡️ Show Inflation-Adjusted Value
+            </label>
+          </div>
+          <div class="text-muted small mt-1">See what your returns are worth in today's money after adjusting for inflation.</div>
+        </div>
+
+        <!-- Inflation Rate Slider (hidden by default) -->
+        <div class="mb-4" id="inflationSection" style="display:none;">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-semibold">Expected Annual Inflation Rate (%)</label>
+            <span class="badge bg-warning text-dark fs-6" id="inflationVal">6%</span>
+          </div>
+          <input type="range" class="form-range" id="inflation" min="1" max="15" step="0.5" value="6">
+          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>15%</span></div>
+          <div class="text-muted small mt-1">Adjust the expected average annual inflation rate to see the real purchasing power of your returns.</div>
+        </div>
+
+        <!-- Inflation-Adjusted Result Section (hidden by default) -->
+        <div id="inflationResultSection" style="display:none;" class="mt-3">
+          <div class="row text-center g-3">
+            <div class="col-md-6">
+              <div class="result-card p-3 rounded border border-warning bg-warning bg-opacity-10">
+                <div class="text-muted small mb-1">💰 Inflation-Adjusted Value</div>
+                <div class="fw-bold fs-5 text-warning" id="inflationAdjustedValue">—</div>
+                <div class="text-muted small mt-1">(In today's money)</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="result-card p-3 rounded bg-light border">
+                <div class="text-muted small mb-1">📉 Purchasing Power Loss</div>
+                <div class="fw-bold fs-5 text-danger" id="purchasingPowerLoss">—</div>
+                <div class="text-muted small mt-1">(Eroded by inflation)</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 p-3 rounded border border-warning bg-warning bg-opacity-10 text-center" id="inflationCallout">
+            <span class="text-muted small" id="inflationCalloutText">—</span>
+          </div>
+        </div>
+
         <p class="text-muted small mt-4 mb-0 text-center">
           * Estimated returns are based on a fixed rate and are for illustration purposes only. Actual returns may vary.
         </p>
@@ -222,6 +269,10 @@
     const topupTableSection = document.getElementById("topupTableSection");
     const regularResultSection    = document.getElementById("regularResultSection");
     const comparisonResultSection = document.getElementById("comparisonResultSection");
+    const inflationToggle        = document.getElementById("inflationToggle");
+    const inflationSlider        = document.getElementById("inflation");
+    const inflationSection       = document.getElementById("inflationSection");
+    const inflationResultSection = document.getElementById("inflationResultSection");
 
     // Show / hide the top-up controls
     topupToggle.addEventListener("change", function () {
@@ -232,6 +283,17 @@
 
     topupSlider.addEventListener("input", function () {
       document.getElementById("topupVal").textContent = formatPercent(this.value);
+      calculate();
+    });
+
+    inflationToggle.addEventListener("change", function () {
+      inflationSection.style.display       = this.checked ? "block" : "none";
+      inflationResultSection.style.display = this.checked ? "block" : "none";
+      calculate();
+    });
+
+    inflationSlider.addEventListener("input", function () {
+      document.getElementById("inflationVal").textContent = formatPercent(this.value);
       calculate();
     });
 
@@ -278,6 +340,23 @@
         document.getElementById("invested").textContent = formatINR(totalInvested);
         document.getElementById("returns").textContent  = formatINR(estimatedReturns);
         document.getElementById("total").textContent    = formatINR(futureValue);
+      }
+
+      // Inflation-adjusted calculation
+      if (inflationToggle.checked) {
+        const inflationRate = Number(inflationSlider.value);
+        const nominalFV = topupToggle.checked
+          ? calculateTopUpSIP(P, annualRate, years, Number(topupSlider.value)).futureValue
+          : calculateSIP(P, annualRate, years).futureValue;
+
+        const { inflationAdjustedValue, purchasingPowerLoss } = calculateInflationAdjusted(nominalFV, inflationRate, years);
+
+        document.getElementById("inflationAdjustedValue").textContent = formatINR(inflationAdjustedValue);
+        document.getElementById("purchasingPowerLoss").textContent    = formatINR(purchasingPowerLoss);
+        document.getElementById("inflationCalloutText").textContent   =
+          "In today's money, your corpus of " + formatINR(nominalFV) +
+          " will be worth " + formatINR(inflationAdjustedValue) +
+          " after accounting for " + inflationRate + "% annual inflation over " + years + " years.";
       }
     }
 
