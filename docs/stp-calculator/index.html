@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portfolio Optimizer (STP) — Wealth Builder</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #1A237E; min-height: 100%; }
+    body { font-family: 'Inter', -apple-system, sans-serif; min-height: 100%; background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); color: #fff; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.2); outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; }
+    input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; }
+    .card { background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 28px; }
+    .val-badge { display: inline-block; background: rgba(212,175,55,0.15); color: #D4AF37; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 4px 14px; font-size: 0.875rem; font-weight: 700; }
+    .result-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; text-align: center; }
+    .result-card .label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+    .result-card .value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .results-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .flow-box { border-radius: 12px; padding: 16px; text-align: center; flex: 1; }
+    .flow-debt { background: rgba(59,130,246,0.15); border: 1.5px solid rgba(59,130,246,0.4); }
+    .flow-equity { background: rgba(5,150,105,0.15); border: 1.5px solid rgba(5,150,105,0.4); }
+    .flow-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 12px; }
+    .flow-diagram { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+    th { background: rgba(212,175,55,0.15); color: #D4AF37; padding: 10px 12px; text-align: right; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    th:first-child { text-align: center; }
+    td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); text-align: right; }
+    td:first-child { text-align: center; font-weight: 600; }
+    .section { padding: 32px 16px; max-width: 720px; margin: 0 auto; }
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0; }
+    @keyframes pulse-arrow { 0%,100%{transform:translateX(0);opacity:1;} 50%{transform:translateX(4px);opacity:0.7;} }
+    @media (max-width: 640px) { .results-grid-3 { grid-template-columns: 1fr; } .flow-diagram { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav style="background:#0D1B4B;min-height:64px;border-bottom:2px solid rgba(212,175,55,0.25);display:flex;align-items:center;padding:0 16px;">
+    <div style="max-width:720px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <i class="ph ph-coin" style="font-size:1.6rem;color:#D4AF37;"></i>
+        <div>
+          <div style="color:#D4AF37;font-size:1.05rem;font-weight:700;letter-spacing:0.4px;line-height:1.2;">Wealth Builder</div>
+          <div style="color:rgba(255,255,255,0.55);font-size:0.7rem;letter-spacing:0.5px;">Portfolio Optimizer (STP)</div>
+        </div>
+      </a>
+      <span style="color:rgba(255,255,255,0.65);font-size:0.875rem;font-weight:500;">STP Calculator</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section style="text-align:center;padding:40px 16px;">
+    <div style="max-width:720px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+        <i class="ph ph-shuffle" style="font-size:2rem;color:#D4AF37;"></i>
+        <h1 style="font-size:1.9rem;font-weight:800;color:#fff;letter-spacing:-0.3px;">Portfolio Optimizer (STP)</h1>
+      </div>
+      <p style="color:rgba(255,255,255,0.65);font-size:0.95rem;line-height:1.7;">
+        Systematically transfer from Debt to Equity for optimal risk-adjusted returns.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Section -->
+  <section class="section">
+
+    <!-- Flow Diagram Card -->
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="font-size:1rem;font-weight:700;color:#D4AF37;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        <i class="ph ph-flow-arrow"></i> Strategy Flow — Debt to Equity
+      </h3>
+      <div class="flow-diagram">
+        <div class="flow-box flow-debt">
+          <div style="font-size:1.5rem;margin-bottom:6px;"><i class="ph ph-bank" style="color:#60A5FA;"></i></div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">Debt Fund</div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-bottom:8px;">Safety &amp; Stability</div>
+          <div id="debtCorpusFlow" style="font-size:1.1rem;font-weight:700;color:#60A5FA;">—</div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);">Remaining</div>
+        </div>
+        <div class="flow-arrow">
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">Monthly</div>
+          <div style="font-size:1.5rem;animation:pulse-arrow 1.5s ease-in-out infinite;color:#D4AF37;">→</div>
+          <div id="transferAmtFlow" style="font-size:0.75rem;font-weight:700;color:#D4AF37;">—</div>
+        </div>
+        <div class="flow-box flow-equity">
+          <div style="font-size:1.5rem;margin-bottom:6px;"><i class="ph ph-trend-up" style="color:#34D399;"></i></div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">Equity Fund</div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-bottom:8px;">Growth &amp; Returns</div>
+          <div id="equityCorpusFlow" style="font-size:1.1rem;font-weight:700;color:#34D399;">—</div>
+          <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);">Built Up</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sliders Card -->
+    <div class="card">
+
+      <!-- Initial Lump Sum -->
+      <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.7);">Initial Lump Sum (Rs.)</label>
+          <span id="lumpsumVal" class="val-badge">Rs. 5,00,000</span>
+        </div>
+        <input type="range" id="lumpsum" min="100000" max="10000000" step="50000" value="500000">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>Rs. 1,00,000</span><span>Rs. 1,00,00,000</span>
+        </div>
+      </div>
+
+      <!-- Monthly Transfer -->
+      <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.7);">Monthly Transfer Amount (Rs.)</label>
+          <span id="transferVal" class="val-badge">Rs. 25,000</span>
+        </div>
+        <input type="range" id="transfer" min="5000" max="200000" step="5000" value="25000">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>Rs. 5,000</span><span>Rs. 2,00,000</span>
+        </div>
+      </div>
+
+      <!-- Debt Fund Return -->
+      <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.7);"><span style="color:#93C5FD;">Debt Fund</span> Return (%)</label>
+          <span id="debtRateVal" class="val-badge">7%</span>
+        </div>
+        <input type="range" id="debtRate" min="4" max="12" step="0.5" value="7">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>4%</span><span>12%</span>
+        </div>
+      </div>
+
+      <!-- Equity Fund Return -->
+      <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.7);"><span style="color:#6EE7B7;">Equity Fund</span> Return (%)</label>
+          <span id="equityRateVal" class="val-badge">14%</span>
+        </div>
+        <input type="range" id="equityRate" min="8" max="30" step="0.5" value="14">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>8%</span><span>30%</span>
+        </div>
+      </div>
+
+      <!-- STP Duration -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.7);">STP Duration</label>
+          <span id="durationVal" class="val-badge">24 Months</span>
+        </div>
+        <input type="range" id="duration" min="6" max="60" step="1" value="24">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>6 Mo</span><span>60 Mo</span>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Results Grid -->
+      <div class="results-grid-3">
+        <div class="result-card" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);">
+          <div class="label">Debt Corpus Remaining</div>
+          <div class="value" id="debtResult" style="color:#60A5FA;">—</div>
+        </div>
+        <div class="result-card" style="background:rgba(5,150,105,0.1);border-color:rgba(5,150,105,0.3);">
+          <div class="label">Equity Corpus Built</div>
+          <div class="value" id="equityResult" style="color:#34D399;">—</div>
+        </div>
+        <div class="result-card" style="background:linear-gradient(135deg,#B8860B,#D4AF37);border:none;">
+          <div class="label" style="color:rgba(26,35,126,0.8);">Total Portfolio</div>
+          <div class="value" id="totalResult" style="color:#1A237E;font-size:1.3rem;">—</div>
+        </div>
+      </div>
+
+      <!-- Comparison -->
+      <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="result-card">
+          <div class="label">vs Direct Equity Investment</div>
+          <div id="vsDirectVal" style="font-size:1rem;font-weight:700;color:#D4AF37;margin:4px 0;">—</div>
+          <div id="vsDirectBadge" style="font-size:0.75rem;font-weight:600;padding:2px 10px;border-radius:20px;display:inline-block;">—</div>
+        </div>
+        <div class="result-card">
+          <div class="label">vs Debt Only</div>
+          <div id="vsDebtVal" style="font-size:1rem;font-weight:700;color:#D4AF37;margin:4px 0;">—</div>
+          <div id="vsDebtBadge" style="font-size:0.75rem;font-weight:600;padding:2px 10px;border-radius:20px;display:inline-block;">—</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Month-by-Month Table -->
+    <div class="card" style="margin-top:24px;">
+      <h6 style="color:#D4AF37;font-weight:700;margin-bottom:8px;">Month-by-Month Breakdown</h6>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+        <table>
+          <thead><tr>
+            <th>Month</th>
+            <th>Debt Corpus</th>
+            <th>Equity Corpus</th>
+            <th>Total Portfolio</th>
+          </tr></thead>
+          <tbody id="stpTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Back link -->
+    <div style="text-align:center;margin-top:32px;">
+      <a href="../index.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:500;color:rgba(212,175,55,0.8);text-decoration:none;">
+        <i class="ph ph-arrow-left"></i> Back to All Calculators
+      </a>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer style="background:#0D1B4B;border-top:1px solid rgba(212,175,55,0.2);padding:20px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:32px;">
+    © 2026 Wealth Builder — Licensed under <a href="../../LICENSE" style="color:#D4AF37;text-decoration:none;">MIT License</a>. Free to reuse with attribution.
+  </footer>
+
+  <script src="../assets/js/app.js"></script>
+  <script>
+    function calculateSTP(lumpSum, monthlyTransfer, debtRate, equityRate, months) {
+      const dr = debtRate / 100 / 12;
+      const er = equityRate / 100 / 12;
+      let debtCorpus = lumpSum;
+      let equityCorpus = 0;
+      let totalTransferred = 0;
+      const breakdown = [];
+
+      for (let m = 1; m <= months; m++) {
+        debtCorpus = debtCorpus * (1 + dr);
+        const transfer = Math.min(monthlyTransfer, debtCorpus);
+        debtCorpus -= transfer;
+        totalTransferred += transfer;
+        equityCorpus = (equityCorpus + transfer) * (1 + er);
+        breakdown.push({
+          month: m,
+          debtCorpus: Math.round(debtCorpus),
+          equityCorpus: Math.round(equityCorpus),
+          totalCorpus: Math.round(debtCorpus + equityCorpus)
+        });
+      }
+
+      const totalCorpus = debtCorpus + equityCorpus;
+      const directEquityValue = lumpSum * Math.pow(1 + equityRate / 100 / 12, months);
+      const debtOnlyValue = lumpSum * Math.pow(1 + debtRate / 100 / 12, months);
+
+      return { debtCorpus, equityCorpus, totalCorpus, totalTransferred, breakdown, directEquityValue, debtOnlyValue };
+    }
+
+    function renderSTPTable(breakdown) {
+      const tbody = document.getElementById('stpTableBody');
+      tbody.innerHTML = '';
+      breakdown.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.style.background = i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent';
+        tr.innerHTML =
+          '<td>Month ' + row.month + '</td>' +
+          '<td style="color:#60A5FA;">' + formatINR(row.debtCorpus) + '</td>' +
+          '<td style="color:#34D399;">' + formatINR(row.equityCorpus) + '</td>' +
+          '<td style="color:#D4AF37;font-weight:700;">' + formatINR(row.totalCorpus) + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function compBadge(stpVal, benchVal, el) {
+      const diff = stpVal - benchVal;
+      if (diff >= 0) {
+        el.textContent = 'STP Outperforms \u2191 +' + formatINR(Math.abs(diff));
+        el.style.background = 'rgba(34,197,94,0.15)';
+        el.style.color = '#4ADE80';
+        el.style.border = '1px solid rgba(34,197,94,0.4)';
+      } else {
+        el.textContent = 'Trails \u2193 -' + formatINR(Math.abs(diff));
+        el.style.background = 'rgba(239,68,68,0.12)';
+        el.style.color = '#F87171';
+        el.style.border = '1px solid rgba(239,68,68,0.35)';
+      }
+    }
+
+    function calculate() {
+      const lumpSum         = parseFloat(document.getElementById('lumpsum').value);
+      const monthlyTransfer = parseFloat(document.getElementById('transfer').value);
+      const debtRate        = parseFloat(document.getElementById('debtRate').value);
+      const equityRate      = parseFloat(document.getElementById('equityRate').value);
+      const months          = parseInt(document.getElementById('duration').value, 10);
+
+      const r = calculateSTP(lumpSum, monthlyTransfer, debtRate, equityRate, months);
+
+      // Flow diagram
+      document.getElementById('debtCorpusFlow').textContent  = formatINR(r.debtCorpus);
+      document.getElementById('equityCorpusFlow').textContent = formatINR(r.equityCorpus);
+      document.getElementById('transferAmtFlow').textContent  = formatINR(monthlyTransfer);
+
+      // Results
+      document.getElementById('debtResult').textContent   = formatINR(r.debtCorpus);
+      document.getElementById('equityResult').textContent  = formatINR(r.equityCorpus);
+      document.getElementById('totalResult').textContent   = formatINR(r.totalCorpus);
+
+      // Comparison
+      document.getElementById('vsDirectVal').textContent = formatINR(r.directEquityValue);
+      compBadge(r.totalCorpus, r.directEquityValue, document.getElementById('vsDirectBadge'));
+
+      document.getElementById('vsDebtVal').textContent = formatINR(r.debtOnlyValue);
+      compBadge(r.totalCorpus, r.debtOnlyValue, document.getElementById('vsDebtBadge'));
+
+      // Table
+      const showAll = months <= 24;
+      renderSTPTable(showAll ? r.breakdown : r.breakdown.slice(0, 12));
+    }
+
+    function wire(sliderId, badgeId, formatter) {
+      const el = document.getElementById(sliderId);
+      const badge = document.getElementById(badgeId);
+      el.addEventListener('input', () => {
+        badge.textContent = formatter(parseFloat(el.value));
+        calculate();
+      });
+    }
+
+    wire('lumpsum',    'lumpsumVal',   v => formatINR(v));
+    wire('transfer',   'transferVal',  v => formatINR(v));
+    wire('debtRate',   'debtRateVal',  v => v + '%');
+    wire('equityRate', 'equityRateVal', v => v + '%');
+    wire('duration',   'durationVal',  v => v + ' Months');
+
+    calculate();
+  </script>
+
+</body>
+</html>
