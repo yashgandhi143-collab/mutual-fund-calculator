@@ -1,0 +1,67 @@
+/* =============================================
+   Mutual Fund Calculator — Global Styles
+   License: MIT — Free to reuse with attribution
+   ============================================= */
+
+/* Body */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Navbar */
+.navbar-brand {
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+}
+
+/* Hero Section */
+section.bg-white h1 {
+  letter-spacing: -0.5px;
+}
+
+/* Calculator Cards on Home */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px !important;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
+}
+
+/* Result Cards */
+.result-card {
+  border-radius: 10px;
+}
+
+/* Range Slider */
+.form-range::-webkit-slider-thumb {
+  background: #0d6efd;
+}
+
+.form-range::-moz-range-thumb {
+  background: #0d6efd;
+}
+
+/* Badge */
+.badge.bg-primary {
+  font-size: 0.95rem !important;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* Footer */
+footer {
+  font-size: 0.85rem;
+}
+
+footer a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
