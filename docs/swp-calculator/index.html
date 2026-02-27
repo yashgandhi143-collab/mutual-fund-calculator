@@ -4,348 +4,198 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SWP Calculator — Wealth Builder</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.18);
-      outline: none;
-      cursor: pointer;
-      accent-color: #D4AF37;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #D4AF37;
-      cursor: pointer;
-      border: 2px solid #1A237E;
-      box-shadow: 0 2px 6px rgba(212,175,55,0.45);
-    }
-    input[type="range"]::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #D4AF37;
-      cursor: pointer;
-      border: 2px solid #1A237E;
-      box-shadow: 0 2px 6px rgba(212,175,55,0.45);
-    }
-
-    .toggle-track { transition: background-color 0.2s ease; }
-
-    .card-glass {
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 1rem;
-    }
-    .label-muted { color: rgba(255,255,255,0.7); }
-    .gold { color: #D4AF37; }
-
-    /* Sustainability meter */
-    .meter-track {
-      height: 14px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.12);
-      overflow: hidden;
-      position: relative;
-    }
-    .meter-fill {
-      height: 100%;
-      border-radius: 9999px;
-      transition: width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.4s ease;
-    }
-
-    /* Zone segment markers */
-    .meter-zones {
-      display: grid;
-      grid-template-columns: repeat(4,1fr);
-      gap: 3px;
-      height: 6px;
-      border-radius: 9999px;
-      overflow: hidden;
-    }
-    .zone-red   { background: #ef4444; border-radius: 9999px 0 0 9999px; }
-    .zone-yellow{ background: #eab308; }
-    .zone-green { background: #22c55e; }
-    .zone-gold  { background: #D4AF37; border-radius: 0 9999px 9999px 0; }
-
-    table { border-collapse: collapse; }
-    th, td { border-bottom: 1px solid rgba(255,255,255,0.08); }
-
-    /* Indefinite glow animation */
-    @keyframes infiniteGlow {
-      0%, 100% { opacity: 1; text-shadow: 0 0 20px rgba(212,175,55,0.8); }
-      50%       { opacity: 0.75; text-shadow: 0 0 40px rgba(212,175,55,1); }
-    }
-    .glow-gold { animation: infiniteGlow 2s ease-in-out infinite; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); background-attachment: fixed; color: #fff; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.2); outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; box-shadow: 0 2px 6px rgba(212,175,55,0.5); }
+    input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; }
+    .card { background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 28px; }
+    .val-badge { display: inline-block; background: rgba(212,175,55,0.15); color: #D4AF37; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 4px 14px; font-size: 0.875rem; font-weight: 700; }
+    .result-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; text-align: center; }
+    .result-card .label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+    .result-card .value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .results-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .meter-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 9999px; height: 20px; overflow: hidden; margin: 12px 0; }
+    .meter-bar { height: 100%; border-radius: 9999px; transition: width 0.6s ease, background 0.6s ease; }
+    .toggle-wrap { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+    .toggle-track { width: 44px; height: 24px; border-radius: 12px; background: rgba(255,255,255,0.2); position: relative; flex-shrink: 0; transition: background 0.2s; }
+    .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+    th { background: rgba(212,175,55,0.15); color: #D4AF37; padding: 10px 12px; text-align: right; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    th:first-child { text-align: center; }
+    td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); text-align: right; }
+    td:first-child { text-align: center; font-weight: 600; }
+    .section { padding: 32px 16px; max-width: 720px; margin: 0 auto; }
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0; }
+    @keyframes pulse-gold { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+    @media (max-width: 640px) { .results-grid-3 { grid-template-columns: 1fr; } }
   </style>
 </head>
-<body class="min-h-screen" style="background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); min-height: 100vh;">
+<body>
 
   <!-- Navbar -->
-  <nav style="background: #0D1B4B; min-height: 64px; border-bottom: 2px solid rgba(212,175,55,0.25);" class="px-4 flex items-center shadow-lg">
-    <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
-      <a href="../index.html" class="flex items-center gap-2 no-underline" style="text-decoration: none;">
-        <i class="ph ph-coin" style="font-size: 1.6rem; color: #D4AF37;"></i>
-        <div>
-          <div class="font-bold" style="color: #D4AF37; font-size: 1.05rem; letter-spacing: 0.4px; line-height: 1.2;">Wealth Builder</div>
-          <div style="color: rgba(255,255,255,0.55); font-size: 0.7rem; letter-spacing: 0.5px;">Retirement Income Planner</div>
-        </div>
+  <nav style="background:#0D1B4B;height:64px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid rgba(212,175,55,0.2);position:sticky;top:0;z-index:10;">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:720px;margin:0 auto;">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <i class="ph ph-chart-line-up" style="color:#D4AF37;font-size:1.5rem;"></i>
+        <span style="color:#D4AF37;font-weight:700;font-size:1.1rem;">Wealth Builder</span>
       </a>
-      <span class="text-sm font-medium" style="color: rgba(255,255,255,0.65);">SWP Calculator</span>
+      <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Retirement Income Planner</span>
     </div>
   </nav>
 
   <!-- Hero -->
-  <section class="text-center py-10 px-4">
-    <div class="max-w-2xl mx-auto">
-      <div class="flex items-center justify-center gap-3 mb-3">
-        <i class="ph ph-arrows-out" style="font-size: 2rem; color: #D4AF37;"></i>
-        <h1 class="font-extrabold" style="font-size: 1.9rem; color: #ffffff; letter-spacing: -0.3px;">SWP Calculator</h1>
+  <div style="text-align:center;padding:40px 16px 24px;">
+    <div style="max-width:720px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+        <i class="ph ph-arrows-counter-clockwise" style="color:#D4AF37;font-size:2rem;"></i>
+        <h1 style="font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-0.3px;">Retirement Income Planner (SWP)</h1>
       </div>
-      <p style="color: rgba(255,255,255,0.65); font-size: 0.95rem;">
-        Plan your retirement withdrawals. See how long your corpus lasts and whether your wealth grows indefinitely.
-      </p>
+      <p style="color:rgba(255,255,255,0.6);font-size:0.95rem;">Know exactly how long your retirement corpus will last with different withdrawal scenarios.</p>
     </div>
-  </section>
+  </div>
 
-  <!-- Main Content -->
-  <section class="pb-12 px-4">
-    <div class="max-w-3xl mx-auto space-y-6">
+  <!-- Main Section -->
+  <section class="section" style="padding-top:0;">
 
-      <!-- Calculator Inputs Card -->
-      <div class="card-glass p-6 md:p-8">
+    <!-- Sliders Card -->
+    <div class="card">
 
-        <!-- Initial Corpus -->
-        <div class="mb-7">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold label-muted">Initial Corpus (Rs.)</label>
-            <span id="corpusVal" class="text-sm font-bold px-3 py-1 rounded-full"
-              style="background: rgba(212,175,55,0.18); color: #D4AF37; border: 1.5px solid rgba(212,175,55,0.35);">Rs. 20,00,000</span>
-          </div>
-          <input type="range" id="corpus" min="100000" max="50000000" step="100000" value="2000000" class="w-full">
-          <div class="flex justify-between mt-1 text-xs label-muted">
-            <span>Rs. 1,00,000</span><span>Rs. 5,00,00,000</span>
-          </div>
+      <!-- Initial Corpus -->
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.9);">Initial Corpus (Rs.)</label>
+          <span id="corpusVal" class="val-badge">Rs. 20,00,000</span>
         </div>
-
-        <!-- Monthly Withdrawal -->
-        <div class="mb-7">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold label-muted">Monthly Withdrawal (Rs.)</label>
-            <span id="withdrawalVal" class="text-sm font-bold px-3 py-1 rounded-full"
-              style="background: rgba(212,175,55,0.18); color: #D4AF37; border: 1.5px solid rgba(212,175,55,0.35);">Rs. 20,000</span>
-          </div>
-          <input type="range" id="withdrawal" min="1000" max="200000" step="1000" value="20000" class="w-full">
-          <div class="flex justify-between mt-1 text-xs label-muted">
-            <span>Rs. 1,000</span><span>Rs. 2,00,000</span>
-          </div>
-        </div>
-
-        <!-- Expected Annual Return -->
-        <div class="mb-7">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold label-muted">Expected Annual Return (%)</label>
-            <span id="returnVal" class="text-sm font-bold px-3 py-1 rounded-full"
-              style="background: rgba(212,175,55,0.18); color: #D4AF37; border: 1.5px solid rgba(212,175,55,0.35);">8%</span>
-          </div>
-          <input type="range" id="annualReturn" min="1" max="20" step="0.5" value="8" class="w-full">
-          <div class="flex justify-between mt-1 text-xs label-muted">
-            <span>1%</span><span>20%</span>
-          </div>
-        </div>
-
-        <!-- Inflation Toggle -->
-        <div class="mb-2">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <label class="text-sm font-semibold label-muted">Inflation Rate (%)</label>
-              <span class="text-xs label-muted italic">(optional)</span>
-            </div>
-            <button id="inflationToggle" onclick="toggleInflation()"
-              class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
-              style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.2);">
-              <span id="toggleLabel">Enable</span>
-              <div id="toggleTrack" class="toggle-track w-8 h-4 rounded-full relative" style="background: rgba(255,255,255,0.2);">
-                <div id="toggleThumb" class="absolute top-0.5 left-0.5 w-3 h-3 rounded-full transition-all" style="background: rgba(255,255,255,0.6);"></div>
-              </div>
-            </button>
-          </div>
-
-          <div id="inflationPanel" class="hidden">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs label-muted">Adjusts real purchasing power of withdrawals</span>
-              <span id="inflationVal" class="text-sm font-bold px-3 py-1 rounded-full"
-                style="background: rgba(239,68,68,0.18); color: #f87171; border: 1.5px solid rgba(239,68,68,0.3);">6%</span>
-            </div>
-            <input type="range" id="inflation" min="1" max="15" step="0.5" value="6" class="w-full">
-            <div class="flex justify-between mt-1 text-xs label-muted">
-              <span>1%</span><span>15%</span>
-            </div>
-          </div>
-        </div>
-
+        <input type="range" id="corpus" min="100000" max="50000000" step="100000" value="2000000">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.4);"><span>Rs. 1,00,000</span><span>Rs. 5,00,00,000</span></div>
       </div>
 
-      <!-- Results Card -->
-      <div id="resultsCard" class="card-glass p-6 md:p-8">
-
-        <!-- Sustainability Meter -->
-        <div class="mb-8">
-          <div class="flex items-center gap-2 mb-4">
-            <i class="ph ph-gauge" style="font-size: 1.3rem; color: #D4AF37;"></i>
-            <h2 class="font-bold text-white" style="font-size: 1.05rem;">Sustainability Meter</h2>
-          </div>
-
-          <!-- Duration Display -->
-          <div id="durationDisplay" class="text-center mb-5 py-4 rounded-xl" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
-            <div id="durationText" class="font-extrabold" style="font-size: 1.7rem; color: #fff; line-height: 1.2;"></div>
-            <div id="durationLabel" class="text-sm mt-1" style="color: rgba(255,255,255,0.6);"></div>
-          </div>
-
-          <!-- Zone Legend -->
-          <div class="grid grid-cols-4 gap-1 mb-2 text-center" style="font-size: 0.65rem;">
-            <div style="color: #ef4444;" class="font-semibold">0–10 yrs<br><span class="font-normal opacity-75">Danger</span></div>
-            <div style="color: #eab308;" class="font-semibold">10–20 yrs<br><span class="font-normal opacity-75">Caution</span></div>
-            <div style="color: #22c55e;" class="font-semibold">20–30 yrs<br><span class="font-normal opacity-75">Good</span></div>
-            <div style="color: #D4AF37;" class="font-semibold">30+ yrs<br><span class="font-normal opacity-75">Excellent</span></div>
-          </div>
-
-          <!-- Zone Segments Background -->
-          <div class="meter-zones mb-1">
-            <div class="zone-red"></div>
-            <div class="zone-yellow"></div>
-            <div class="zone-green"></div>
-            <div class="zone-gold"></div>
-          </div>
-
-          <!-- Meter Track -->
-          <div class="meter-track">
-            <div id="meterFill" class="meter-fill" style="width: 0%;"></div>
-          </div>
-
-          <!-- Status Message -->
-          <div id="meterStatus" class="text-center mt-3 text-sm font-semibold" style="color: rgba(255,255,255,0.8);"></div>
+      <!-- Monthly Withdrawal -->
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.9);">Monthly Withdrawal (Rs.)</label>
+          <span id="withdrawalVal" class="val-badge">Rs. 20,000</span>
         </div>
-
-        <!-- Summary Stats Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-
-          <div class="rounded-xl p-4 text-center" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
-            <div class="text-xs font-semibold label-muted mb-1 uppercase tracking-wide">Monthly Withdrawal</div>
-            <div id="statWithdrawal" class="font-extrabold text-white" style="font-size: 1.2rem;"></div>
-          </div>
-
-          <div class="rounded-xl p-4 text-center" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
-            <div class="text-xs font-semibold label-muted mb-1 uppercase tracking-wide">Corpus Duration</div>
-            <div id="statDuration" class="font-extrabold text-white" style="font-size: 1.1rem;"></div>
-          </div>
-
-          <div class="rounded-xl p-4 text-center" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
-            <div class="text-xs font-semibold label-muted mb-1 uppercase tracking-wide">Total Withdrawn</div>
-            <div id="statTotalWithdrawn" class="font-extrabold" style="font-size: 1.1rem; color: #D4AF37;"></div>
-          </div>
-
-        </div>
-
-        <!-- Inflation-adjusted note (shown when inflation enabled) -->
-        <div id="inflationNote" class="hidden rounded-xl px-4 py-3 mb-6 text-sm flex items-start gap-2"
-          style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: rgba(255,255,255,0.8);">
-          <i class="ph ph-warning-circle mt-0.5 flex-shrink-0" style="color: #f87171;"></i>
-          <span id="inflationNoteText"></span>
-        </div>
-
-        <!-- Indefinite note -->
-        <div id="indefiniteNote" class="hidden rounded-xl px-4 py-3 mb-6 text-sm flex items-start gap-2"
-          style="background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.3); color: rgba(255,255,255,0.9);">
-          <i class="ph ph-star-four mt-0.5 flex-shrink-0" style="color: #D4AF37;"></i>
-          <span>Your monthly interest income exceeds your withdrawal. Your corpus grows indefinitely — you're in <strong style="color:#D4AF37;">wealth preservation mode</strong>!</span>
-        </div>
-
+        <input type="range" id="withdrawal" min="1000" max="200000" step="1000" value="20000">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.4);"><span>Rs. 1,000</span><span>Rs. 2,00,000</span></div>
       </div>
 
-      <!-- Year-by-Year Table Card -->
-      <div class="card-glass p-6 md:p-8">
-        <div class="flex items-center gap-2 mb-5">
-          <i class="ph ph-table" style="font-size: 1.3rem; color: #D4AF37;"></i>
-          <h2 class="font-bold text-white" style="font-size: 1.05rem;">Year-by-Year Corpus Breakdown</h2>
-          <span id="tableCaption" class="text-xs label-muted ml-1">(first 20 years or until depletion)</span>
+      <!-- Annual Return -->
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.9);">Expected Annual Return (%)</label>
+          <span id="rateVal" class="val-badge">8%</span>
         </div>
+        <input type="range" id="rate" min="1" max="20" step="0.5" value="8">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.4);"><span>1%</span><span>20%</span></div>
+      </div>
 
-        <div class="overflow-x-auto rounded-lg" style="border: 1px solid rgba(255,255,255,0.1);">
-          <table class="w-full text-sm">
-            <thead>
-              <tr style="background: rgba(212,175,55,0.12);">
-                <th class="text-left px-3 py-2.5 font-semibold" style="color: #D4AF37; white-space: nowrap;">Year</th>
-                <th class="text-right px-3 py-2.5 font-semibold" style="color: #D4AF37; white-space: nowrap;">Opening Corpus</th>
-                <th class="text-right px-3 py-2.5 font-semibold" style="color: #D4AF37; white-space: nowrap;">Interest Earned</th>
-                <th class="text-right px-3 py-2.5 font-semibold" style="color: #D4AF37; white-space: nowrap;">Total Withdrawn</th>
-                <th class="text-right px-3 py-2.5 font-semibold" style="color: #D4AF37; white-space: nowrap;">Closing Corpus</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-            </tbody>
-          </table>
+      <!-- Inflation Toggle -->
+      <div style="margin-top:16px;">
+        <label class="toggle-wrap">
+          <div style="position:relative;flex-shrink:0;">
+            <input type="checkbox" id="inflationToggle" style="position:absolute;opacity:0;width:0;height:0;">
+            <div id="inflationTrack" class="toggle-track"></div>
+            <div id="inflationThumb" class="toggle-thumb"></div>
+          </div>
+          <div>
+            <div style="font-size:0.875rem;font-weight:600;color:#fff;">Show Inflation Impact</div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;">Adjust withdrawal for inflation over time.</div>
+          </div>
+        </label>
+        <div id="inflationSection" style="display:none;margin-top:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <label style="font-size:0.875rem;font-weight:600;color:rgba(255,255,255,0.9);">Annual Inflation Rate (%)</label>
+            <span id="inflationVal" style="display:inline-block;background:rgba(217,119,6,0.2);color:#FCD34D;border:1px solid rgba(217,119,6,0.4);border-radius:20px;padding:4px 14px;font-size:0.875rem;font-weight:700;">6%</span>
+          </div>
+          <input type="range" id="inflation" min="1" max="15" step="0.5" value="6">
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.4);"><span>1%</span><span>15%</span></div>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Sustainability Meter -->
+      <div id="sustainabilitySection" style="margin-top:8px;">
+        <h3 style="font-size:1rem;font-weight:700;color:#D4AF37;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <i class="ph ph-gauge"></i> Sustainability Meter
+        </h3>
+        <div id="sustainabilityDisplay" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Corpus Duration</span>
+            <span id="meterLabel" style="font-size:0.8rem;font-weight:600;color:rgba(255,255,255,0.7);">—</span>
+          </div>
+          <div class="meter-bar-wrap">
+            <div id="meterBar" class="meter-bar" style="width:0%;background:#EF4444;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:rgba(255,255,255,0.4);margin-bottom:12px;">
+            <span>0 yrs</span><span>10 yrs</span><span>20 yrs</span><span>30 yrs</span><span>50+ yrs</span>
+          </div>
+          <div id="durationDisplay" style="text-align:center;padding:16px;border-radius:10px;background:rgba(255,255,255,0.05);">
+            <div id="durationText" style="font-size:1.8rem;font-weight:800;color:#D4AF37;margin-bottom:4px;">—</div>
+            <div id="durationSubtext" style="font-size:0.85rem;color:rgba(255,255,255,0.6);">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Grid -->
+      <div class="results-grid-3" style="margin-top:20px;">
+        <div class="result-card">
+          <div class="label">Monthly Withdrawal</div>
+          <div class="value" id="withdrawalDisplay">—</div>
+        </div>
+        <div class="result-card">
+          <div class="label">Total Withdrawn</div>
+          <div class="value" id="totalWithdrawn" style="color:#34D399;">—</div>
+        </div>
+        <div class="result-card" style="background:linear-gradient(135deg,#B8860B,#D4AF37);border:none;">
+          <div class="label" style="color:rgba(26,35,126,0.7);">Initial Corpus</div>
+          <div class="value" style="color:#1A237E;" id="corpusDisplay">—</div>
         </div>
       </div>
 
     </div>
+
+    <!-- Year-by-Year Table Card -->
+    <div class="card" style="margin-top:24px;">
+      <h6 style="color:#D4AF37;font-weight:700;margin-bottom:8px;">Year-by-Year Corpus Breakdown</h6>
+      <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:16px;">Shows how your corpus evolves each year.</p>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+        <table>
+          <thead><tr>
+            <th>Year</th>
+            <th>Opening Corpus</th>
+            <th>Interest Earned</th>
+            <th>Amount Withdrawn</th>
+            <th>Closing Corpus</th>
+          </tr></thead>
+          <tbody id="corpusTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Back link -->
+    <div style="text-align:center;margin-top:32px;">
+      <a href="../index.html" style="color:rgba(212,175,55,0.8);text-decoration:none;font-size:0.875rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+        <i class="ph ph-arrow-left"></i> Back to All Calculators
+      </a>
+    </div>
+
   </section>
 
   <!-- Footer -->
-  <footer class="text-center py-8 px-4" style="border-top: 1px solid rgba(255,255,255,0.1);">
-    <div class="max-w-3xl mx-auto">
-      <a href="../index.html" class="inline-flex items-center gap-2 text-sm font-medium mb-4 no-underline"
-        style="color: rgba(212,175,55,0.8); text-decoration: none;">
-        <i class="ph ph-arrow-left"></i>
-        Back to All Calculators
-      </a>
-      <p class="text-xs" style="color: rgba(255,255,255,0.35);">
-        Wealth Builder &copy; 2025 &mdash; For educational purposes only. Not financial advice.
-      </p>
-    </div>
+  <footer style="text-align:center;padding:24px 16px;border-top:1px solid rgba(255,255,255,0.1);margin-top:16px;">
+    <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);">Wealth Builder &copy; 2025 &mdash; For educational purposes only. Not financial advice.</p>
   </footer>
 
   <script src="../assets/js/app.js"></script>
   <script>
-    // ── State ─────────────────────────────────────────────────────────────────
-    let inflationEnabled = false;
-
-    // ── Toggle Inflation ──────────────────────────────────────────────────────
-    function toggleInflation() {
-      inflationEnabled = !inflationEnabled;
-      const panel  = document.getElementById('inflationPanel');
-      const track  = document.getElementById('toggleTrack');
-      const thumb  = document.getElementById('toggleThumb');
-      const label  = document.getElementById('toggleLabel');
-
-      if (inflationEnabled) {
-        panel.classList.remove('hidden');
-        track.style.background = '#D4AF37';
-        thumb.style.transform  = 'translateX(16px)';
-        thumb.style.background = '#fff';
-        label.textContent = 'Enabled';
-      } else {
-        panel.classList.add('hidden');
-        track.style.background = 'rgba(255,255,255,0.2)';
-        thumb.style.transform  = '';
-        thumb.style.background = 'rgba(255,255,255,0.6)';
-        label.textContent = 'Enable';
-      }
-      calculate();
-    }
-
     // ── Core SWP Calculation ──────────────────────────────────────────────────
     function calculateSWP(corpus, monthlyWithdrawal, annualRate) {
       const r = annualRate / 100 / 12;
@@ -363,166 +213,149 @@
       return { months, years, remainingMonths, totalWithdrawn, isIndefinite };
     }
 
-    // ── Year-by-Year Table Data ───────────────────────────────────────────────
-    function buildYearlyTable(initialCorpus, monthlyWithdrawal, annualRate) {
-      const r = annualRate / 100 / 12;
-      const rows = [];
-      let corpus = initialCorpus;
-      const MAX_YEARS = 20;
+    // ── Meter Update ──────────────────────────────────────────────────────────
+    function updateMeter(years, isIndefinite) {
+      const bar = document.getElementById('meterBar');
+      const label = document.getElementById('meterLabel');
+      let pct, color, labelText;
+      if (isIndefinite) {
+        pct = 100; color = '#D4AF37'; labelText = '∞ Wealth Preservation';
+      } else if (years >= 30) {
+        pct = 90; color = '#D4AF37'; labelText = 'Excellent — 30+ years';
+      } else if (years >= 20) {
+        pct = 70; color = '#22C55E'; labelText = 'Good — 20-30 years';
+      } else if (years >= 10) {
+        pct = 45; color = '#EAB308'; labelText = 'Moderate — 10-20 years';
+      } else {
+        pct = Math.max(10, (years / 10) * 40); color = '#EF4444'; labelText = 'Low — under 10 years';
+      }
+      bar.style.width = pct + '%';
+      bar.style.background = color;
+      label.textContent = labelText;
+      label.style.color = color;
+    }
 
-      for (let y = 1; y <= MAX_YEARS; y++) {
-        if (corpus <= 0) break;
-        const opening = corpus;
+    // ── Render Corpus Table ───────────────────────────────────────────────────
+    function renderCorpusTable(corpus, withdrawal, annualRate, maxYears) {
+      const r = annualRate / 100 / 12;
+      const tbody = document.getElementById('corpusTableBody');
+      tbody.innerHTML = '';
+      let currentCorpus = corpus;
+      const limit = maxYears || 20;
+
+      for (let y = 1; y <= limit; y++) {
+        if (currentCorpus <= 0) break;
+        const opening = currentCorpus;
         let interestEarned = 0;
         let totalYearWithdrawal = 0;
 
         for (let m = 0; m < 12; m++) {
-          if (corpus <= 0) break;
-          const interest = corpus * r;
+          if (currentCorpus <= 0) break;
+          const interest = currentCorpus * r;
           interestEarned += interest;
-          corpus = corpus + interest - monthlyWithdrawal;
-          totalYearWithdrawal += monthlyWithdrawal;
-          if (corpus < 0) {
-            // partial last month — adjust
-            totalYearWithdrawal += corpus; // corpus is negative, so this subtracts
-            corpus = 0;
+          currentCorpus = currentCorpus + interest - withdrawal;
+          totalYearWithdrawal += withdrawal;
+          if (currentCorpus < 0) {
+            totalYearWithdrawal += currentCorpus;
+            currentCorpus = 0;
           }
         }
 
-        rows.push({
-          year: y,
-          opening: Math.round(opening),
-          interestEarned: Math.round(interestEarned),
-          totalWithdrawn: Math.round(totalYearWithdrawal),
-          closing: Math.max(0, Math.round(corpus))
-        });
+        const closing = Math.max(0, Math.round(currentCorpus));
+        const closingColor = closing === 0 ? '#F87171' : (closing > Math.round(opening) ? '#4ADE80' : 'rgba(255,255,255,0.85)');
+        const tr = document.createElement('tr');
+        tr.style.background = y % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent';
+        tr.innerHTML =
+          '<td style="color:#D4AF37;">Year ' + y + '</td>' +
+          '<td>' + formatINR(Math.round(opening)) + '</td>' +
+          '<td style="color:#4ADE80;">' + formatINR(Math.round(interestEarned)) + '</td>' +
+          '<td style="color:#F87171;">−' + formatINR(Math.round(totalYearWithdrawal)) + '</td>' +
+          '<td style="color:' + closingColor + ';font-weight:600;">' + (closing === 0 ? '—' : formatINR(closing)) + '</td>';
+        tbody.appendChild(tr);
       }
-      return rows;
-    }
-
-    // ── Meter Color & Width ───────────────────────────────────────────────────
-    function getMeterStyle(years, isIndefinite) {
-      if (isIndefinite) {
-        return { width: '100%', color: '#D4AF37', status: '✦ Wealth Preservation Mode — Corpus grows indefinitely!' };
-      }
-      if (years < 10) {
-        const pct = Math.max(2, (years / 10) * 25);
-        return { width: pct + '%', color: '#ef4444', status: '⚠ Corpus depletes quickly — consider reducing withdrawals' };
-      }
-      if (years < 20) {
-        const pct = 25 + ((years - 10) / 10) * 25;
-        return { width: pct + '%', color: '#eab308', status: '◈ Moderate sustainability — good for medium-term needs' };
-      }
-      if (years < 30) {
-        const pct = 50 + ((years - 20) / 10) * 25;
-        return { width: pct + '%', color: '#22c55e', status: '✔ Good retirement coverage — comfortable long-term plan' };
-      }
-      // 30–50 years
-      const pct = 75 + Math.min(25, ((years - 30) / 20) * 25);
-      return { width: pct + '%', color: '#D4AF37', status: '★ Excellent! Strong wealth preservation for 30+ years' };
     }
 
     // ── Main Calculate ────────────────────────────────────────────────────────
     function calculate() {
-      const corpus          = parseFloat(document.getElementById('corpus').value);
-      const monthlyWithdraw = parseFloat(document.getElementById('withdrawal').value);
-      const annualRate      = parseFloat(document.getElementById('annualReturn').value);
-      const inflationRate   = parseFloat(document.getElementById('inflation').value);
+      const corpus     = parseFloat(document.getElementById('corpus').value);
+      const withdrawal = parseFloat(document.getElementById('withdrawal').value);
+      const annualRate = parseFloat(document.getElementById('rate').value);
+      const inflation  = parseFloat(document.getElementById('inflation').value);
 
-      const result = calculateSWP(corpus, monthlyWithdraw, annualRate);
+      // Update badges
+      document.getElementById('corpusVal').textContent    = formatINR(corpus);
+      document.getElementById('withdrawalVal').textContent = formatINR(withdrawal);
+      document.getElementById('rateVal').textContent       = annualRate + '%';
 
-      // ── Duration Display ──
-      let durationText, durationLabel;
-      if (result.isIndefinite) {
-        durationText  = '∞';
-        durationLabel = 'Your corpus grows indefinitely!';
-      } else {
-        const yLabel = result.years > 0 ? result.years + ' yr' + (result.years !== 1 ? 's' : '') : '';
-        const mLabel = result.remainingMonths > 0 ? result.remainingMonths + ' mo' : '';
-        durationText  = [yLabel, mLabel].filter(Boolean).join(' ') || '< 1 month';
-        durationLabel = 'Your corpus lasts ' + (result.years > 0 || result.remainingMonths > 0 ? durationText : 'less than a month');
-      }
+      const result = calculateSWP(corpus, withdrawal, annualRate);
 
-      const durEl = document.getElementById('durationText');
-      const durLabelEl = document.getElementById('durationLabel');
+      // Meter
+      updateMeter(result.years, result.isIndefinite);
+
+      // Duration display
+      const durationDisplay = document.getElementById('durationDisplay');
+      const durationText    = document.getElementById('durationText');
+      const durationSubtext = document.getElementById('durationSubtext');
 
       if (result.isIndefinite) {
-        durEl.classList.add('glow-gold');
-        durEl.style.color = '#D4AF37';
-        durEl.style.fontSize = '3rem';
+        durationDisplay.style.background = 'rgba(212,175,55,0.1)';
+        durationText.textContent    = '∞';
+        durationSubtext.textContent = 'Your corpus grows indefinitely — Wealth Preservation Mode!';
       } else {
-        durEl.classList.remove('glow-gold');
-        durEl.style.color = '#fff';
-        durEl.style.fontSize = '1.7rem';
+        durationDisplay.style.background = 'rgba(255,255,255,0.05)';
+        const yrs = result.years > 0 ? result.years + ' yrs' : '';
+        const mos = result.remainingMonths > 0 ? result.remainingMonths + ' mo' : '';
+        durationText.textContent    = [yrs, mos].filter(Boolean).join(' ') || '< 1 mo';
+        durationSubtext.textContent = 'Your corpus sustains your withdrawal for this duration.';
       }
-      durEl.textContent = durationText;
-      durLabelEl.textContent = durationLabel;
 
-      // ── Meter ──
-      const meter = getMeterStyle(result.years, result.isIndefinite);
-      const fill  = document.getElementById('meterFill');
-      fill.style.width      = meter.width;
-      fill.style.background = meter.color;
-      document.getElementById('meterStatus').style.color = meter.color;
-      document.getElementById('meterStatus').textContent = meter.status;
+      // Result cards
+      document.getElementById('withdrawalDisplay').textContent = formatINR(withdrawal);
+      document.getElementById('totalWithdrawn').textContent    = result.isIndefinite ? '∞' : formatINR(result.totalWithdrawn);
+      document.getElementById('corpusDisplay').textContent     = formatINR(corpus);
 
-      // ── Stats ──
-      document.getElementById('statWithdrawal').textContent    = formatINR(monthlyWithdraw);
-      document.getElementById('statDuration').textContent      = result.isIndefinite ? '∞ Indefinite' : durationText;
-      document.getElementById('statTotalWithdrawn').textContent = formatINR(result.totalWithdrawn);
-
-      // ── Inflation note ──
-      const inflNoteEl = document.getElementById('inflationNote');
-      const inflNoteText = document.getElementById('inflationNoteText');
-      if (inflationEnabled && !result.isIndefinite) {
-        inflNoteEl.classList.remove('hidden');
-        // real purchasing power of fixed withdrawal degrades over time
-        const realLastYear = monthlyWithdraw / Math.pow(1 + inflationRate / 100, result.years);
-        inflNoteText.textContent =
-          'With ' + inflationRate + '% annual inflation, your Rs. ' +
-          Math.round(monthlyWithdraw).toLocaleString('en-IN') +
+      // Inflation note (reuse durationSubtext for inflation impact if enabled)
+      if (document.getElementById('inflationToggle').checked && !result.isIndefinite) {
+        const realLastYear = withdrawal / Math.pow(1 + inflation / 100, result.years);
+        durationSubtext.textContent =
+          'With ' + inflation + '% inflation, your ' + formatINR(withdrawal) +
           ' monthly withdrawal will have the purchasing power of ' +
-          formatINR(realLastYear) + ' in today\'s terms after ' + result.years + ' years.';
-      } else {
-        inflNoteEl.classList.add('hidden');
+          formatINR(realLastYear) + ' after ' + result.years + ' years.';
       }
 
-      // ── Indefinite note ──
-      const indefEl = document.getElementById('indefiniteNote');
-      result.isIndefinite ? indefEl.classList.remove('hidden') : indefEl.classList.add('hidden');
-
-      // ── Year-by-year table ──
-      const tableRows = buildYearlyTable(corpus, monthlyWithdraw, annualRate);
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-      tableRows.forEach((row, i) => {
-        const tr = document.createElement('tr');
-        tr.style.background = i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent';
-        const closingColor = row.closing === 0 ? '#f87171' : (row.closing > row.opening ? '#4ade80' : 'rgba(255,255,255,0.85)');
-        tr.innerHTML =
-          '<td class="px-3 py-2.5 font-semibold" style="color:#D4AF37;">Year ' + row.year + '</td>' +
-          '<td class="px-3 py-2.5 text-right" style="color:rgba(255,255,255,0.85);">' + formatINR(row.opening) + '</td>' +
-          '<td class="px-3 py-2.5 text-right" style="color:#4ade80;">' + formatINR(row.interestEarned) + '</td>' +
-          '<td class="px-3 py-2.5 text-right" style="color:#f87171;">−' + formatINR(row.totalWithdrawn) + '</td>' +
-          '<td class="px-3 py-2.5 text-right font-semibold" style="color:' + closingColor + ';">' + (row.closing === 0 ? '—' : formatINR(row.closing)) + '</td>';
-        tbody.appendChild(tr);
-      });
+      // Render table
+      renderCorpusTable(corpus, withdrawal, annualRate, 20);
     }
+
+    // ── Toggle Inflation ──────────────────────────────────────────────────────
+    document.getElementById('inflationToggle').addEventListener('change', function () {
+      const section = document.getElementById('inflationSection');
+      const track   = document.getElementById('inflationTrack');
+      const thumb   = document.getElementById('inflationThumb');
+      if (this.checked) {
+        section.style.display = 'block';
+        track.style.background = '#D4AF37';
+        thumb.style.transform  = 'translateX(20px)';
+      } else {
+        section.style.display = 'none';
+        track.style.background = 'rgba(255,255,255,0.2)';
+        thumb.style.transform  = '';
+      }
+      calculate();
+    });
+
+    // Make the toggle-wrap label clicks propagate correctly
+    document.querySelector('.toggle-wrap').addEventListener('click', function (e) {
+      if (e.target.tagName === 'INPUT') return;
+      const cb = document.getElementById('inflationToggle');
+      cb.checked = !cb.checked;
+      cb.dispatchEvent(new Event('change'));
+    });
 
     // ── Slider wiring ─────────────────────────────────────────────────────────
-    function wire(sliderId, displayId, formatter) {
-      const el = document.getElementById(sliderId);
-      const disp = document.getElementById(displayId);
-      el.addEventListener('input', () => {
-        disp.textContent = formatter(parseFloat(el.value));
-        calculate();
-      });
-    }
-
-    wire('corpus',       'corpusVal',    v => formatINR(v));
-    wire('withdrawal',   'withdrawalVal',v => formatINR(v));
-    wire('annualReturn', 'returnVal',    v => v + '%');
-    wire('inflation',    'inflationVal', v => v + '%');
+    ['corpus', 'withdrawal', 'rate', 'inflation'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', calculate);
+    });
 
     // Initial render
     calculate();
