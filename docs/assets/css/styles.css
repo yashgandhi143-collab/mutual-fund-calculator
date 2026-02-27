@@ -73,6 +73,28 @@ footer a:hover {
 }
 
 /* ===========================
+   Donut Chart (Lumpsum Calculator)
+   =========================== */
+.chart-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.donut-chart {
+  transform: rotate(-90deg);
+}
+
+.donut-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+/* ===========================
    Utility
    =========================== */
 .opacity-75 {
