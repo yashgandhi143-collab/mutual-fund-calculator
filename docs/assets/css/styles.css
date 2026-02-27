@@ -1,75 +1,439 @@
 /* ===========================
+   CSS Custom Properties
+   =========================== */
+:root {
+  --color-primary: #4F46E5;
+  --color-primary-dark: #3730A3;
+  --color-primary-light: #EEF2FF;
+  --color-success: #059669;
+  --color-success-light: #D1FAE5;
+  --color-warning: #D97706;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #DC2626;
+  --color-danger-light: #FEE2E2;
+  --color-surface: #FFFFFF;
+  --color-bg: #F8FAFC;
+  --color-border: #E2E8F0;
+  --color-text: #1E293B;
+  --color-text-muted: #64748B;
+  --radius-card: 16px;
+  --radius-badge: 8px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 8px 32px rgba(79,70,229,0.12), 0 2px 8px rgba(0,0,0,0.08);
+
+  /* Bootstrap 5 variable overrides */
+  --bs-primary: #4F46E5;
+  --bs-primary-rgb: 79, 70, 229;
+  --bs-success: #059669;
+  --bs-success-rgb: 5, 150, 105;
+  --bs-warning: #D97706;
+  --bs-warning-rgb: 217, 119, 6;
+  --bs-danger: #DC2626;
+  --bs-danger-rgb: 220, 38, 38;
+  --bs-body-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bs-body-color: #374151;
+  --bs-border-color: #E2E8F0;
+}
+
+/* ===========================
    Global Styles
    =========================== */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #374151;
+  background-color: var(--color-bg) !important;
+}
+
+/* ===========================
+   Text Color Overrides
+   =========================== */
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-success {
+  color: var(--color-success) !important;
+}
+
+.text-warning {
+  color: var(--color-warning) !important;
+}
+
+.text-danger {
+  color: var(--color-danger) !important;
+}
+
+.text-muted {
+  color: var(--color-text-muted) !important;
 }
 
 /* ===========================
    Navbar
    =========================== */
+.navbar.bg-primary {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%) !important;
+  min-height: 64px;
+  border-bottom: 2px solid rgba(255,255,255,0.15);
+}
+
+.navbar .container {
+  align-items: center;
+}
+
 .navbar-brand {
-  font-size: 1.3rem;
-  letter-spacing: 0.5px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #fff !important;
+}
+
+.navbar .navbar-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8) !important;
+}
+
+/* ===========================
+   Hero Section (Home Page)
+   =========================== */
+.hero-home {
+  background: radial-gradient(ellipse at 60% 0%, #EEF2FF 0%, #fff 65%) !important;
+}
+
+.hero-home h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-text) !important;
+}
+
+.hero-home .lead {
+  font-size: 1.05rem;
+  color: var(--color-text-muted) !important;
+}
+
+.hero-divider {
+  width: 48px;
+  height: 2px;
+  background-color: var(--color-primary);
+  border: none;
+  margin: 1rem auto 0;
+  opacity: 1;
 }
 
 /* ===========================
    Calculator Cards (Home Page)
    =========================== */
 .card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  border: none !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+.card-icon-wrap {
+  width: 56px;
+  height: 56px;
+  background: var(--color-primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text) !important;
+}
+
+.card-text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted) !important;
 }
 
 /* ===========================
-   Result Cards (Calculator Pages)
+   Buttons
    =========================== */
-.result-card {
-  border-radius: 10px;
-  transition: box-shadow 0.2s ease;
+.btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  border-radius: 8px !important;
+  padding: 0.45rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff !important;
 }
 
-.result-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--color-primary-dark) !important;
+  border-color: var(--color-primary-dark) !important;
+}
+
+.btn-outline-primary {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.btn-outline-secondary {
+  border-radius: 8px !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* ===========================
+   Calculator Page Hero Section
+   =========================== */
+.calc-hero {
+  background: #fff !important;
+  padding: 1.5rem 0 !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.calc-hero h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text) !important;
+}
+
+/* ===========================
+   Main Calculator Card
+   =========================== */
+.card.shadow-sm.border-0.p-4 {
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  background: var(--color-surface);
+  padding: 2rem !important;
+}
+
+/* ===========================
+   Form Labels
+   =========================== */
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0;
+}
+
+/* ===========================
+   Badges (Slider Values)
+   =========================== */
+.badge {
+  border-radius: 20px !important;
+  font-size: 0.875rem !important;
+  padding: 0.3em 0.85em !important;
+  font-weight: 700 !important;
+}
+
+.badge.bg-primary {
+  background-color: var(--color-primary-light) !important;
+  color: var(--color-primary) !important;
+  border: 1.5px solid rgba(79,70,229,0.2);
+}
+
+.badge.bg-success {
+  background-color: var(--color-success-light) !important;
+  color: var(--color-success) !important;
+  border: 1.5px solid rgba(5,150,105,0.2);
+}
+
+.badge.bg-warning {
+  background-color: var(--color-warning-light) !important;
+  color: var(--color-warning) !important;
+  border: 1.5px solid rgba(217,119,6,0.2);
 }
 
 /* ===========================
    Range Sliders
    =========================== */
 .form-range::-webkit-slider-thumb {
-  background-color: #0d6efd;
+  background-color: var(--color-primary);
+  width: 20px;
+  height: 20px;
+  border: none;
 }
 
 .form-range::-moz-range-thumb {
-  background-color: #0d6efd;
+  background-color: var(--color-primary);
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+}
+
+/* ===========================
+   HR Dividers
+   =========================== */
+hr {
+  border-color: var(--color-border);
+  opacity: 1;
+}
+
+/* ===========================
+   Toggle Switches
+   =========================== */
+.form-check-input:checked {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.form-check-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ===========================
+   Result Cards
+   =========================== */
+.result-card {
+  border-radius: 12px !important;
+  padding: 1rem 1.25rem !important;
+  transition: box-shadow 0.2s ease;
+}
+
+.result-card .fw-bold {
+  font-size: 1.2rem;
+  font-weight: 700 !important;
+}
+
+.result-card .small,
+.result-card .text-muted.small {
+  font-size: 0.75rem;
+}
+
+/* Invested Amount / Returns cards (bg-light) */
+.result-card.bg-light {
+  background-color: #fff !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-card);
+}
+
+.result-card.bg-light .text-dark {
+  color: var(--color-text) !important;
+}
+
+.result-card.bg-light .text-success {
+  color: var(--color-success) !important;
+}
+
+/* Total Value card — primary gradient */
+.result-card.bg-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #7C3AED 100%) !important;
+  border: none !important;
+}
+
+/* Total Value card — success gradient (top-up) */
+.result-card.bg-success {
+  background: linear-gradient(135deg, var(--color-success) 0%, #065F46 100%) !important;
+  border: none !important;
+}
+
+/* Inflation warning card */
+.result-card.border-warning.bg-warning.bg-opacity-10 {
+  background-color: var(--color-warning-light) !important;
+  border: 1.5px solid rgba(217,119,6,0.3) !important;
+}
+
+/* Inflation success card (step-up SIP) */
+.result-card.border-success.bg-success.bg-opacity-10 {
+  background-color: var(--color-success-light) !important;
+  border: 1.5px solid rgba(5,150,105,0.3) !important;
+}
+
+/* ===========================
+   Callout / Info Boxes
+   =========================== */
+.bg-success.bg-opacity-10 {
+  background-color: var(--color-success-light) !important;
+  border: 1.5px solid rgba(5,150,105,0.3) !important;
+  border-radius: 12px;
+}
+
+.bg-warning.bg-opacity-10 {
+  background-color: var(--color-warning-light) !important;
+  border: 1.5px solid rgba(217,119,6,0.3) !important;
+  border-radius: 12px;
+}
+
+/* ===========================
+   Tables
+   =========================== */
+.table {
+  font-size: 0.85rem;
+}
+
+.table-primary {
+  --bs-table-bg: var(--color-primary-light);
+  --bs-table-color: var(--color-primary);
+  --bs-table-border-color: var(--color-border);
+}
+
+.table > thead.table-primary > tr > th,
+thead.table-primary > tr > th {
+  background-color: var(--color-primary-light) !important;
+  color: var(--color-primary) !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.table-responsive {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-hover > tbody > tr:hover > * {
+  background-color: #F8FAFC !important;
+}
+
+.table-success,
+.table tfoot tr.table-success {
+  --bs-table-bg: var(--color-success-light);
+  --bs-table-color: var(--color-success);
+}
+
+.table tfoot tr.table-success > td,
+.table tfoot tr.table-success > th {
+  background-color: var(--color-success-light) !important;
+  color: var(--color-success) !important;
+  font-weight: 700;
 }
 
 /* ===========================
    Footer
    =========================== */
 footer {
-  font-size: 0.85rem;
+  background: #fff !important;
+  border-top: 1px solid var(--color-border) !important;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
 footer a {
-  color: #0d6efd;
+  color: var(--color-primary);
   text-decoration: none;
 }
 
 footer a:hover {
   text-decoration: underline;
-}
-
-/* ===========================
-   Badge (Slider Values)
-   =========================== */
-.badge.bg-primary {
-  font-size: 0.95rem !important;
-  padding: 0.4em 0.75em;
 }
 
 /* ===========================
@@ -92,6 +456,8 @@ footer a:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
 }
 
 /* ===========================
