@@ -4,159 +4,209 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SIP Calculator — Mutual Fund Calculator</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/styles.css">
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: #E2E8F0;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #4F46E5;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(79,70,229,0.3);
+    }
+    input[type="range"].topup-range::-webkit-slider-thumb {
+      background: #059669;
+    }
+    input[type="range"].inflation-range::-webkit-slider-thumb {
+      background: #D97706;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #4F46E5;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+    .toggle-track {
+      transition: background-color 0.2s ease;
+    }
+    table { border-collapse: collapse; }
+  </style>
 </head>
-<body class="bg-light">
+<body class="min-h-screen" style="background-color: #F8FAFC;">
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="../index.html">📈 Mutual Fund Calculator</a>
-      <span class="navbar-text text-white">SIP Calculator</span>
+  <!-- Navbar -->
+  <nav style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); min-height: 64px; border-bottom: 2px solid rgba(255,255,255,0.15);" class="px-4 flex items-center shadow-md">
+    <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
+      <a href="../index.html" class="flex items-center gap-2 text-white font-bold no-underline" style="font-size: 1.15rem; letter-spacing: 0.3px;">
+        <i class="ph ph-chart-line-up" style="font-size: 1.5rem;"></i>
+        <span>Mutual Fund Calculator</span>
+      </a>
+      <span class="text-sm" style="color: rgba(255,255,255,0.8);">SIP Calculator</span>
     </div>
   </nav>
 
-  <section class="py-4 text-center bg-white border-bottom calc-hero">
-    <div class="container">
-      <h1 class="h3 fw-bold text-primary">💰 SIP Calculator</h1>
-      <p class="text-muted mb-0">Calculate the future value of your Systematic Investment Plan (SIP)</p>
+  <!-- Page Hero -->
+  <section class="text-center py-6 bg-white border-b" style="border-color: #E2E8F0;">
+    <div class="max-w-5xl mx-auto px-4">
+      <h1 class="font-bold mb-1 flex items-center justify-center gap-2" style="font-size: 1.5rem; color: #1E293B;">
+        <i class="ph ph-coins" style="color: #4F46E5; font-size: 1.5rem;"></i>
+        SIP Calculator
+      </h1>
+      <p class="text-sm" style="color: #64748B;">Calculate the future value of your Systematic Investment Plan (SIP)</p>
     </div>
   </section>
 
-  <section class="py-5">
-    <div class="container" style="max-width: 860px;">
-      <div class="card shadow-sm border-0 p-4">
+  <!-- Main Content -->
+  <section class="py-8 px-4">
+    <div class="max-w-3xl mx-auto">
+
+      <!-- Calculator Card -->
+      <div class="bg-white rounded-2xl p-6 md:p-8" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Monthly Investment -->
-        <div class="mb-4">
-          <div class="d-flex justify-content-between">
-            <label class="form-label fw-semibold">Monthly Investment (Rs.)</label>
-            <span class="badge bg-primary fs-6" id="principalVal">Rs. 5,000</span>
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-semibold" style="color: #1E293B;">Monthly Investment (Rs.)</label>
+            <span id="principalVal" class="text-sm font-bold px-3 py-1 rounded-full" style="background: #EEF2FF; color: #4F46E5; border: 1.5px solid rgba(79,70,229,0.2);">Rs. 5,000</span>
           </div>
-          <input type="range" class="form-range" id="principal" min="500" max="100000" step="500" value="5000">
-          <div class="d-flex justify-content-between text-muted small"><span>Rs. 500</span><span>Rs. 1,00,000</span></div>
+          <input type="range" id="principal" min="500" max="100000" step="500" value="5000" class="w-full">
+          <div class="flex justify-between mt-1 text-xs" style="color: #94A3B8;">
+            <span>Rs. 500</span><span>Rs. 1,00,000</span>
+          </div>
         </div>
 
         <!-- Expected Return -->
-        <div class="mb-4">
-          <div class="d-flex justify-content-between">
-            <label class="form-label fw-semibold">Expected Annual Return (%)</label>
-            <span class="badge bg-primary fs-6" id="rateVal">12%</span>
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-semibold" style="color: #1E293B;">Expected Annual Return (%)</label>
+            <span id="rateVal" class="text-sm font-bold px-3 py-1 rounded-full" style="background: #EEF2FF; color: #4F46E5; border: 1.5px solid rgba(79,70,229,0.2);">12%</span>
           </div>
-          <input type="range" class="form-range" id="rate" min="1" max="30" step="0.5" value="12">
-          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>30%</span></div>
+          <input type="range" id="rate" min="1" max="30" step="0.5" value="12" class="w-full">
+          <div class="flex justify-between mt-1 text-xs" style="color: #94A3B8;">
+            <span>1%</span><span>30%</span>
+          </div>
         </div>
 
         <!-- Time Period -->
-        <div class="mb-4">
-          <div class="d-flex justify-content-between">
-            <label class="form-label fw-semibold">Time Period (Years)</label>
-            <span class="badge bg-primary fs-6" id="yearsVal">10 Yrs</span>
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-semibold" style="color: #1E293B;">Time Period (Years)</label>
+            <span id="yearsVal" class="text-sm font-bold px-3 py-1 rounded-full" style="background: #EEF2FF; color: #4F46E5; border: 1.5px solid rgba(79,70,229,0.2);">10 Yrs</span>
           </div>
-          <input type="range" class="form-range" id="years" min="1" max="40" step="1" value="10">
-          <div class="d-flex justify-content-between text-muted small"><span>1 Yr</span><span>40 Yrs</span></div>
+          <input type="range" id="years" min="1" max="40" step="1" value="10" class="w-full">
+          <div class="flex justify-between mt-1 text-xs" style="color: #94A3B8;">
+            <span>1 Yr</span><span>40 Yrs</span>
+          </div>
         </div>
 
         <!-- Top-Up Toggle -->
-        <div class="mb-3">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="topupToggle" role="switch">
-            <label class="form-check-label fw-semibold" for="topupToggle">
-              📈 Enable Annual Top-Up SIP
-            </label>
-          </div>
-          <div class="text-muted small mt-1">Automatically increase your SIP amount every year by a fixed percentage.</div>
+        <div class="mb-4">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <div class="relative">
+              <input type="checkbox" id="topupToggle" class="sr-only">
+              <div id="topupTrack" class="toggle-track w-11 h-6 rounded-full" style="background: #CBD5E1;"></div>
+              <div id="topupThumb" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200" style="transform: translateX(0);"></div>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5 text-sm font-semibold" style="color: #1E293B;">
+                <i class="ph ph-trend-up" style="color: #4F46E5;"></i>
+                Enable Annual Top-Up SIP
+              </div>
+              <div class="text-xs mt-0.5" style="color: #94A3B8;">Automatically increase your SIP amount every year by a fixed percentage.</div>
+            </div>
+          </label>
         </div>
 
         <!-- Top-Up Rate Slider (hidden by default) -->
-        <div class="mb-4" id="topupSection" style="display:none;">
-          <div class="d-flex justify-content-between">
-            <label class="form-label fw-semibold">Annual Top-Up Rate (%)</label>
-            <span class="badge bg-success fs-6" id="topupVal">10%</span>
+        <div class="mb-6" id="topupSection" style="display:none;">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-semibold" style="color: #1E293B;">Annual Top-Up Rate (%)</label>
+            <span id="topupVal" class="text-sm font-bold px-3 py-1 rounded-full" style="background: #D1FAE5; color: #059669; border: 1.5px solid rgba(5,150,105,0.2);">10%</span>
           </div>
-          <input type="range" class="form-range topup-range" id="topup" min="1" max="50" step="1" value="10">
-          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>50%</span></div>
+          <input type="range" class="topup-range w-full" id="topup" min="1" max="50" step="1" value="10" style="accent-color: #059669;">
+          <div class="flex justify-between mt-1 text-xs" style="color: #94A3B8;"><span>1%</span><span>50%</span></div>
         </div>
 
-        <hr />
+        <hr style="border-color: #E2E8F0; margin: 1.5rem 0;" />
 
         <!-- Result Summary Cards (shown when top-up is OFF) -->
         <div id="regularResultSection">
-          <div class="row text-center g-3 mt-1">
-            <div class="col-md-4">
-              <div class="result-card p-3 rounded bg-light border">
-                <div class="text-muted small mb-1">Invested Amount</div>
-                <div class="fw-bold fs-5 text-dark" id="invested">—</div>
-              </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="rounded-xl p-4 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+              <div class="text-xs mb-1" style="color: #64748B;">Invested Amount</div>
+              <div class="font-bold text-lg" id="invested" style="color: #1E293B;">—</div>
             </div>
-            <div class="col-md-4">
-              <div class="result-card p-3 rounded bg-light border">
-                <div class="text-muted small mb-1">Estimated Returns</div>
-                <div class="fw-bold fs-5 text-success" id="returns">—</div>
-              </div>
+            <div class="rounded-xl p-4 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+              <div class="text-xs mb-1" style="color: #64748B;">Estimated Returns</div>
+              <div class="font-bold text-lg" id="returns" style="color: #059669;">—</div>
             </div>
-            <div class="col-md-4">
-              <div class="result-card p-3 rounded bg-primary border">
-                <div class="text-white small mb-1">Total Value</div>
-                <div class="fw-bold fs-5 text-white" id="total">—</div>
-              </div>
+            <div class="rounded-xl p-4 text-center" style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); border: none;">
+              <div class="text-xs mb-1 text-white opacity-80">Total Value</div>
+              <div class="font-bold text-lg text-white" id="total">—</div>
             </div>
           </div>
         </div>
 
         <!-- Comparison Result Cards (shown when top-up is ON) -->
         <div id="comparisonResultSection" style="display:none;">
-          <div class="row g-3 mt-1">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
             <!-- Without Top-Up -->
-            <div class="col-md-6">
-              <h6 class="text-muted fw-semibold text-center mb-2">📊 Without Top-Up</h6>
-              <div class="row text-center g-2">
-                <div class="col-12">
-                  <div class="result-card p-3 rounded bg-light border">
-                    <div class="text-muted small mb-1">Invested Amount</div>
-                    <div class="fw-bold fs-6 text-dark" id="noTopupInvested">—</div>
-                  </div>
+            <div>
+              <h6 class="text-sm font-semibold text-center mb-3 flex items-center justify-center gap-1" style="color: #64748B;">
+                <i class="ph ph-chart-bar"></i> Without Top-Up
+              </h6>
+              <div class="flex flex-col gap-2">
+                <div class="rounded-xl p-3 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                  <div class="text-xs mb-1" style="color: #64748B;">Invested Amount</div>
+                  <div class="font-bold" id="noTopupInvested" style="color: #1E293B;">—</div>
                 </div>
-                <div class="col-12">
-                  <div class="result-card p-3 rounded bg-light border">
-                    <div class="text-muted small mb-1">Estimated Returns</div>
-                    <div class="fw-bold fs-6 text-success" id="noTopupReturns">—</div>
-                  </div>
+                <div class="rounded-xl p-3 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                  <div class="text-xs mb-1" style="color: #64748B;">Estimated Returns</div>
+                  <div class="font-bold" id="noTopupReturns" style="color: #059669;">—</div>
                 </div>
-                <div class="col-12">
-                  <div class="result-card p-3 rounded bg-primary border">
-                    <div class="text-white small mb-1">Total Value</div>
-                    <div class="fw-bold fs-6 text-white" id="noTopupTotal">—</div>
-                  </div>
+                <div class="rounded-xl p-3 text-center" style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
+                  <div class="text-xs mb-1 text-white opacity-80">Total Value</div>
+                  <div class="font-bold text-white" id="noTopupTotal">—</div>
                 </div>
               </div>
             </div>
 
             <!-- With Top-Up -->
-            <div class="col-md-6">
-              <h6 class="text-success fw-semibold text-center mb-2">📈 With Top-Up</h6>
-              <div class="row text-center g-2">
-                <div class="col-12">
-                  <div class="result-card p-3 rounded bg-light border">
-                    <div class="text-muted small mb-1">Invested Amount</div>
-                    <div class="fw-bold fs-6 text-dark" id="topupInvested">—</div>
-                  </div>
+            <div>
+              <h6 class="text-sm font-semibold text-center mb-3 flex items-center justify-center gap-1" style="color: #059669;">
+                <i class="ph ph-trend-up"></i> With Top-Up
+              </h6>
+              <div class="flex flex-col gap-2">
+                <div class="rounded-xl p-3 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                  <div class="text-xs mb-1" style="color: #64748B;">Invested Amount</div>
+                  <div class="font-bold" id="topupInvested" style="color: #1E293B;">—</div>
                 </div>
-                <div class="col-12">
-                  <div class="result-card p-3 rounded bg-light border">
-                    <div class="text-muted small mb-1">Estimated Returns</div>
-                    <div class="fw-bold fs-6 text-success" id="topupReturns">—</div>
-                  </div>
+                <div class="rounded-xl p-3 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                  <div class="text-xs mb-1" style="color: #64748B;">Estimated Returns</div>
+                  <div class="font-bold" id="topupReturns" style="color: #059669;">—</div>
                 </div>
-                <div class="col-12">
-                  <div class="result-card p-3 rounded bg-success border">
-                    <div class="text-white small mb-1">Total Value</div>
-                    <div class="fw-bold fs-6 text-white" id="topupTotal">—</div>
-                  </div>
+                <div class="rounded-xl p-3 text-center" style="background: linear-gradient(135deg, #059669 0%, #065F46 100%);">
+                  <div class="text-xs mb-1 text-white opacity-80">Total Value</div>
+                  <div class="font-bold text-white" id="topupTotal">—</div>
                 </div>
               </div>
             </div>
@@ -164,133 +214,144 @@
           </div>
 
           <!-- Additional gain callout -->
-          <div class="mt-3 p-3 rounded border border-success bg-success bg-opacity-10 text-center">
-            <span class="text-muted small">🚀 Additional Value from Top-Up: </span>
-            <span class="fw-bold text-success fs-6" id="additionalGain">—</span>
+          <div class="mt-4 p-3 rounded-xl text-center" style="background: #D1FAE5; border: 1.5px solid rgba(5,150,105,0.3);">
+            <span class="text-xs" style="color: #64748B;">
+              <i class="ph ph-rocket-launch"></i> Additional Value from Top-Up:
+            </span>
+            <span class="font-bold ml-1" id="additionalGain" style="color: #059669;">—</span>
           </div>
         </div>
 
-        <hr class="mt-4" />
+        <hr style="border-color: #E2E8F0; margin: 1.5rem 0;" />
 
-        <!-- Inflation-Adjusted Toggle -->
-        <div class="mb-3 mt-2">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="inflationToggle" role="switch">
-            <label class="form-check-label fw-semibold" for="inflationToggle">
-              🌡️ Show Inflation-Adjusted Value
-            </label>
-          </div>
-          <div class="text-muted small mt-1">See what your returns are worth in today's money after adjusting for inflation.</div>
+        <!-- Inflation Toggle -->
+        <div class="mb-4">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <div class="relative">
+              <input type="checkbox" id="inflationToggle" class="sr-only">
+              <div id="inflationTrack" class="toggle-track w-11 h-6 rounded-full" style="background: #CBD5E1;"></div>
+              <div id="inflationThumb" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200" style="transform: translateX(0);"></div>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5 text-sm font-semibold" style="color: #1E293B;">
+                <i class="ph ph-thermometer" style="color: #D97706;"></i>
+                Show Inflation-Adjusted Value
+              </div>
+              <div class="text-xs mt-0.5" style="color: #94A3B8;">See what your returns are worth in today's money after adjusting for inflation.</div>
+            </div>
+          </label>
         </div>
 
         <!-- Inflation Rate Slider (hidden by default) -->
-        <div class="mb-4" id="inflationSection" style="display:none;">
-          <div class="d-flex justify-content-between">
-            <label class="form-label fw-semibold">Expected Annual Inflation Rate (%)</label>
-            <span class="badge bg-warning text-dark fs-6" id="inflationVal">6%</span>
+        <div class="mb-6" id="inflationSection" style="display:none;">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-semibold" style="color: #1E293B;">Expected Annual Inflation Rate (%)</label>
+            <span id="inflationVal" class="text-sm font-bold px-3 py-1 rounded-full" style="background: #FEF3C7; color: #D97706; border: 1.5px solid rgba(217,119,6,0.2);">6%</span>
           </div>
-          <input type="range" class="form-range" id="inflation" min="1" max="15" step="0.5" value="6">
-          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>15%</span></div>
-          <div class="text-muted small mt-1">Adjust the expected average annual inflation rate to see the real purchasing power of your returns.</div>
+          <input type="range" class="inflation-range w-full" id="inflation" min="1" max="15" step="0.5" value="6" style="accent-color: #D97706;">
+          <div class="flex justify-between mt-1 text-xs" style="color: #94A3B8;"><span>1%</span><span>15%</span></div>
+          <div class="text-xs mt-2" style="color: #94A3B8;">Adjust the expected average annual inflation rate to see the real purchasing power of your returns.</div>
         </div>
 
         <!-- Inflation-Adjusted Result Section (hidden by default) -->
-        <div id="inflationResultSection" style="display:none;" class="mt-3">
+        <div id="inflationResultSection" style="display:none;" class="mt-2">
 
           <!-- Normal SIP Inflation-Adjusted Results -->
           <div id="inflationNormalSection">
-            <h6 id="inflationNormalLabel" class="text-muted fw-semibold text-center mb-2" style="display:none;">📊 Normal SIP — Inflation Adjusted</h6>
-            <div class="row text-center g-3">
-              <div class="col-md-6">
-                <div class="result-card p-3 rounded border border-warning bg-warning bg-opacity-10">
-                  <div class="text-muted small mb-1">💰 Inflation-Adjusted Value</div>
-                  <div class="fw-bold fs-5 text-warning-dark" id="inflationAdjustedValue">—</div>
-                  <div class="text-muted small mt-1">(In today's money)</div>
+            <h6 id="inflationNormalLabel" class="text-sm font-semibold text-center mb-3 flex items-center justify-center gap-1" style="display:none; color: #64748B;">
+              <i class="ph ph-chart-bar"></i> Normal SIP — Inflation Adjusted
+            </h6>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="rounded-xl p-4 text-center" style="background: #FEF3C7; border: 1.5px solid rgba(217,119,6,0.3);">
+                <div class="text-xs mb-1 flex items-center justify-center gap-1" style="color: #64748B;">
+                  <i class="ph ph-coins"></i> Inflation-Adjusted Value
                 </div>
+                <div class="font-bold text-lg" id="inflationAdjustedValue" style="color: #92400E;">—</div>
+                <div class="text-xs mt-1" style="color: #94A3B8;">(In today's money)</div>
               </div>
-              <div class="col-md-6">
-                <div class="result-card p-3 rounded bg-light border">
-                  <div class="text-muted small mb-1">📉 Purchasing Power Loss</div>
-                  <div class="fw-bold fs-5 text-danger" id="purchasingPowerLoss">—</div>
-                  <div class="text-muted small mt-1">(Eroded by inflation)</div>
+              <div class="rounded-xl p-4 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                <div class="text-xs mb-1 flex items-center justify-center gap-1" style="color: #64748B;">
+                  <i class="ph ph-trend-down"></i> Purchasing Power Loss
                 </div>
+                <div class="font-bold text-lg" id="purchasingPowerLoss" style="color: #DC2626;">—</div>
+                <div class="text-xs mt-1" style="color: #94A3B8;">(Eroded by inflation)</div>
               </div>
             </div>
-            <div class="mt-3 p-3 rounded border border-warning bg-warning bg-opacity-10 text-center">
-              <span class="text-dark small" id="inflationCalloutText">—</span>
-            </div>
+            <div class="mt-3 p-3 rounded-xl text-center text-xs" style="background: #FEF3C7; border: 1.5px solid rgba(217,119,6,0.3); color: #1E293B;" id="inflationCalloutText">—</div>
           </div>
 
           <!-- Step-Up SIP Inflation-Adjusted Results (shown only when top-up is enabled) -->
-          <div id="inflationTopupSection" style="display:none;" class="mt-3">
-            <h6 class="text-muted fw-semibold text-center mb-2">📈 Step-Up SIP — Inflation Adjusted</h6>
-            <div class="row text-center g-3">
-              <div class="col-md-6">
-                <div class="result-card p-3 rounded border border-warning bg-warning bg-opacity-10">
-                  <div class="text-muted small mb-1">💰 Inflation-Adjusted Value</div>
-                  <div class="fw-bold fs-5 text-warning-dark" id="inflationAdjustedValueTopup">—</div>
-                  <div class="text-muted small mt-1">(In today's money)</div>
+          <div id="inflationTopupSection" style="display:none;" class="mt-4">
+            <h6 class="text-sm font-semibold text-center mb-3 flex items-center justify-center gap-1" style="color: #64748B;">
+              <i class="ph ph-trend-up"></i> Step-Up SIP — Inflation Adjusted
+            </h6>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="rounded-xl p-4 text-center" style="background: #FEF3C7; border: 1.5px solid rgba(217,119,6,0.3);">
+                <div class="text-xs mb-1 flex items-center justify-center gap-1" style="color: #64748B;">
+                  <i class="ph ph-coins"></i> Inflation-Adjusted Value
                 </div>
+                <div class="font-bold text-lg" id="inflationAdjustedValueTopup" style="color: #92400E;">—</div>
+                <div class="text-xs mt-1" style="color: #94A3B8;">(In today's money)</div>
               </div>
-              <div class="col-md-6">
-                <div class="result-card p-3 rounded bg-light border">
-                  <div class="text-muted small mb-1">📉 Purchasing Power Loss</div>
-                  <div class="fw-bold fs-5 text-danger" id="purchasingPowerLossTopup">—</div>
-                  <div class="text-muted small mt-1">(Eroded by inflation)</div>
+              <div class="rounded-xl p-4 text-center" style="background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                <div class="text-xs mb-1 flex items-center justify-center gap-1" style="color: #64748B;">
+                  <i class="ph ph-trend-down"></i> Purchasing Power Loss
                 </div>
+                <div class="font-bold text-lg" id="purchasingPowerLossTopup" style="color: #DC2626;">—</div>
+                <div class="text-xs mt-1" style="color: #94A3B8;">(Eroded by inflation)</div>
               </div>
             </div>
-            <div class="mt-3 p-3 rounded border border-warning bg-warning bg-opacity-10 text-center">
-              <span class="text-dark small" id="inflationCalloutTextTopup">—</span>
-            </div>
+            <div class="mt-3 p-3 rounded-xl text-center text-xs" style="background: #FEF3C7; border: 1.5px solid rgba(217,119,6,0.3); color: #1E293B;" id="inflationCalloutTextTopup">—</div>
           </div>
 
         </div>
 
-        <p class="text-muted small mt-4 mb-0 text-center">
+        <p class="text-center mt-6 text-xs" style="color: #94A3B8;">
           * Estimated returns are based on a fixed rate and are for illustration purposes only. Actual returns may vary.
         </p>
 
       </div>
 
       <!-- Top-Up Yearly Breakdown Table -->
-      <div id="topupTableSection" style="display:none;" class="mt-4">
-        <div class="card shadow-sm border-0 p-4">
-          <h6 class="fw-bold text-primary mb-3">📊 Year-by-Year Top-Up SIP Breakdown</h6>
-          <p class="text-muted small mb-3">
+      <div id="topupTableSection" style="display:none;" class="mt-6">
+        <div class="bg-white rounded-2xl p-6" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
+          <h6 class="font-bold mb-2 flex items-center gap-2" style="color: #4F46E5;">
+            <i class="ph ph-table"></i> Year-by-Year Top-Up SIP Breakdown
+          </h6>
+          <p class="text-xs mb-4" style="color: #64748B;">
             The table below shows how your monthly SIP amount increases each year due to the top-up, along with the
             yearly invested amount and the corpus (portfolio value) built up at the end of each year.
           </p>
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered table-hover align-middle topup-table mb-0">
-              <thead class="table-primary">
-                <tr>
-                  <th class="text-center">Year</th>
-                  <th class="text-end">Monthly SIP (Rs.)</th>
-                  <th class="text-end">Yearly Invested (Rs.)</th>
-                  <th class="text-end">Corpus at Year End (Rs.)</th>
+          <div class="overflow-x-auto rounded-xl">
+            <table class="w-full text-sm" style="border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden;">
+              <thead>
+                <tr style="background: #EEF2FF;">
+                  <th class="text-center p-3 font-semibold text-xs uppercase tracking-wide" style="color: #4F46E5; border-bottom: 1px solid #E2E8F0;">Year</th>
+                  <th class="text-right p-3 font-semibold text-xs uppercase tracking-wide" style="color: #4F46E5; border-bottom: 1px solid #E2E8F0;">Monthly SIP (Rs.)</th>
+                  <th class="text-right p-3 font-semibold text-xs uppercase tracking-wide" style="color: #4F46E5; border-bottom: 1px solid #E2E8F0;">Yearly Invested (Rs.)</th>
+                  <th class="text-right p-3 font-semibold text-xs uppercase tracking-wide" style="color: #4F46E5; border-bottom: 1px solid #E2E8F0;">Corpus at Year End (Rs.)</th>
                 </tr>
               </thead>
-              <tbody id="topupTableBody">
-              </tbody>
-              <tfoot id="topupTableFoot">
-              </tfoot>
+              <tbody id="topupTableBody"></tbody>
+              <tfoot id="topupTableFoot"></tfoot>
             </table>
           </div>
         </div>
       </div>
 
-      <div class="text-center mt-4">
-        <a href="../index.html" class="btn btn-outline-primary">Back to All Calculators</a>
+      <div class="text-center mt-6">
+        <a href="../index.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2 rounded-lg border transition-colors no-underline" style="color: #4F46E5; border-color: #4F46E5;">
+          <i class="ph ph-arrow-left"></i> Back to All Calculators
+        </a>
       </div>
+
     </div>
   </section>
 
-  <footer class="text-center py-4 text-muted border-top bg-white mt-4">
+  <footer class="text-center py-5 text-sm bg-white mt-4" style="border-top: 1px solid #E2E8F0; color: #64748B;">
     <small>© 2026 Mutual Fund Calculator — Licensed under MIT License. Free to reuse with attribution.</small>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
     const principalSlider = document.getElementById("principal");
@@ -307,8 +368,21 @@
     const inflationSection       = document.getElementById("inflationSection");
     const inflationResultSection = document.getElementById("inflationResultSection");
 
-    // Show / hide the top-up controls
+    function updateToggleUI(toggle, track, thumb) {
+      if (toggle.checked) {
+        track.style.background = "#4F46E5";
+        thumb.style.transform  = "translateX(20px)";
+      } else {
+        track.style.background = "#CBD5E1";
+        thumb.style.transform  = "translateX(0)";
+      }
+    }
+
+    // Top-up toggle
+    const topupTrack = document.getElementById("topupTrack");
+    const topupThumb = document.getElementById("topupThumb");
     topupToggle.addEventListener("change", function () {
+      updateToggleUI(this, topupTrack, topupThumb);
       topupSection.style.display      = this.checked ? "block" : "none";
       topupTableSection.style.display = this.checked ? "block" : "none";
       calculate();
@@ -319,8 +393,11 @@
       calculate();
     });
 
-    // Show / hide inflation controls
+    // Inflation toggle
+    const inflationTrack = document.getElementById("inflationTrack");
+    const inflationThumb = document.getElementById("inflationThumb");
     inflationToggle.addEventListener("change", function () {
+      updateToggleUI(this, inflationTrack, inflationThumb);
       inflationSection.style.display       = this.checked ? "block" : "none";
       inflationResultSection.style.display = this.checked ? "block" : "none";
       calculate();
@@ -436,22 +513,23 @@
 
       breakdown.forEach(function (row) {
         const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #E2E8F0";
         tr.innerHTML =
-          '<td class="text-center fw-semibold">Year ' + row.year + '</td>' +
-          '<td class="text-end">' + Math.round(row.monthlySIP).toLocaleString("en-IN") + '</td>' +
-          '<td class="text-end">' + Math.round(row.yearlyInvested).toLocaleString("en-IN") + '</td>' +
-          '<td class="text-end text-primary fw-semibold">' + Math.round(row.corpusAtEndOfYear).toLocaleString("en-IN") + '</td>';
+          '<td class="text-center p-3 font-semibold text-xs" style="color: #1E293B;">Year ' + row.year + '</td>' +
+          '<td class="text-right p-3 text-xs" style="color: #374151;">' + Math.round(row.monthlySIP).toLocaleString("en-IN") + '</td>' +
+          '<td class="text-right p-3 text-xs" style="color: #374151;">' + Math.round(row.yearlyInvested).toLocaleString("en-IN") + '</td>' +
+          '<td class="text-right p-3 text-xs font-semibold" style="color: #4F46E5;">' + Math.round(row.corpusAtEndOfYear).toLocaleString("en-IN") + '</td>';
         tbody.appendChild(tr);
       });
 
       // Footer totals row
       const tfr = document.createElement("tr");
-      tfr.classList.add("table-success", "fw-bold");
+      tfr.style.background = "#D1FAE5";
       tfr.innerHTML =
-        '<td class="text-center">Total</td>' +
-        '<td class="text-end">—</td>' +
-        '<td class="text-end">' + Math.round(totalInvested).toLocaleString("en-IN") + '</td>' +
-        '<td class="text-end text-success">' + Math.round(totalCorpus).toLocaleString("en-IN") + '</td>';
+        '<td class="text-center p-3 font-bold text-xs" style="color: #059669;">Total</td>' +
+        '<td class="text-right p-3 text-xs font-bold" style="color: #059669;">—</td>' +
+        '<td class="text-right p-3 text-xs font-bold" style="color: #059669;">' + Math.round(totalInvested).toLocaleString("en-IN") + '</td>' +
+        '<td class="text-right p-3 text-xs font-bold" style="color: #059669;">' + Math.round(totalCorpus).toLocaleString("en-IN") + '</td>';
       tfoot.appendChild(tfr);
     }
 

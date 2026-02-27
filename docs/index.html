@@ -4,105 +4,100 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mutual Fund Calculator</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 8px 32px rgba(79,70,229,0.12), 0 2px 8px rgba(0,0,0,0.08) !important; }
+  </style>
 </head>
-<body class="bg-light">
+<body class="min-h-screen" style="background-color: #F8FAFC;">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="index.html">📈 Mutual Fund Calculator</a>
+  <nav style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); min-height: 64px; border-bottom: 2px solid rgba(255,255,255,0.15);" class="px-4 flex items-center shadow-md">
+    <div class="max-w-6xl mx-auto w-full flex items-center">
+      <a href="index.html" class="flex items-center gap-2 text-white font-bold text-lg no-underline" style="font-size: 1.15rem; letter-spacing: 0.3px;">
+        <i class="ph ph-chart-line-up" style="font-size: 1.5rem;"></i>
+        <span>Mutual Fund Calculator</span>
+      </a>
     </div>
   </nav>
 
   <!-- Hero -->
-  <section class="py-5 text-center bg-white border-bottom hero-home">
-    <div class="container">
-      <h1 class="display-5 fw-bold">Mutual Fund Calculators</h1>
-      <p class="lead text-muted">Free, simple, and browser-based calculators for your investment planning.</p>
-      <hr class="hero-divider">
+  <section class="text-center border-b py-12" style="background: radial-gradient(ellipse at 60% 0%, #EEF2FF 0%, #fff 65%); border-color: #E2E8F0;">
+    <div class="max-w-4xl mx-auto px-4">
+      <h1 class="font-extrabold mb-3" style="font-size: 2.25rem; color: #1E293B;">Mutual Fund Calculators</h1>
+      <p style="font-size: 1.05rem; color: #64748B;">Free, simple, and browser-based calculators for your investment planning.</p>
+      <div class="mx-auto mt-4" style="width: 48px; height: 2px; background: #4F46E5;"></div>
     </div>
   </section>
 
   <!-- Calculator Cards -->
-  <section class="py-5">
-    <div class="container">
-      <div class="row g-4">
+  <section class="py-12 px-4">
+    <div class="max-w-5xl mx-auto grid gap-6" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
 
-        <!-- SIP Calculator -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-body text-center p-4">
-              <div class="card-icon-wrap">💰</div>
-              <h5 class="card-title fw-bold">SIP Calculator</h5>
-              <p class="card-text text-muted">Calculate the future value of your Systematic Investment Plan (SIP) investments.</p>
-              <a href="sip-calculator/index.html" class="btn btn-primary mt-2">Open Calculator</a>
-            </div>
-          </div>
+      <!-- SIP Calculator -->
+      <div class="card-hover bg-white rounded-2xl flex flex-col items-center text-center p-6" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4" style="background: #EEF2FF;">
+          <i class="ph ph-coins" style="font-size: 1.75rem; color: #4F46E5;"></i>
         </div>
-
-        <!-- Lumpsum Calculator -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-body text-center p-4">
-              <div class="card-icon-wrap">📦</div>
-              <h5 class="card-title fw-bold">Lumpsum Calculator</h5>
-              <p class="card-text text-muted">Calculate returns on a one-time lumpsum mutual fund investment.</p>
-              <a href="lumpsum-calculator/index.html" class="btn btn-primary mt-2">Open Calculator</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- CAGR Calculator (Coming Soon) -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0 opacity-75">
-            <div class="card-body text-center p-4">
-              <div class="card-icon-wrap">📊</div>
-              <h5 class="card-title fw-bold">CAGR Calculator</h5>
-              <p class="card-text text-muted">Find the Compound Annual Growth Rate of your investments.</p>
-              <button class="btn btn-outline-secondary mt-2" disabled>Coming Soon</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- SWP Calculator (Coming Soon) -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0 opacity-75">
-            <div class="card-body text-center p-4">
-              <div class="card-icon-wrap">🔄</div>
-              <h5 class="card-title fw-bold">SWP Calculator</h5>
-              <p class="card-text text-muted">Plan your Systematic Withdrawal Plan from mutual fund investments.</p>
-              <button class="btn btn-outline-secondary mt-2" disabled>Coming Soon</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Expense Ratio (Coming Soon) -->
-        <div class="col-md-4">
-          <div class="card h-100 shadow-sm border-0 opacity-75">
-            <div class="card-body text-center p-4">
-              <div class="card-icon-wrap">📉</div>
-              <h5 class="card-title fw-bold">Expense Ratio Impact</h5>
-              <p class="card-text text-muted">See how the expense ratio affects your long-term mutual fund returns.</p>
-              <button class="btn btn-outline-secondary mt-2" disabled>Coming Soon</button>
-            </div>
-          </div>
-        </div>
-
+        <h5 class="font-semibold mb-2" style="font-size: 1.05rem; color: #1E293B;">SIP Calculator</h5>
+        <p class="text-sm mb-4 flex-1" style="color: #64748B;">Calculate the future value of your Systematic Investment Plan (SIP) investments.</p>
+        <a href="sip-calculator/index.html" class="inline-block text-white text-sm font-semibold px-5 py-2 rounded-lg mt-2 no-underline" style="background: #4F46E5;">Open Calculator</a>
       </div>
+
+      <!-- Lumpsum Calculator -->
+      <div class="card-hover bg-white rounded-2xl flex flex-col items-center text-center p-6" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4" style="background: #EEF2FF;">
+          <i class="ph ph-package" style="font-size: 1.75rem; color: #4F46E5;"></i>
+        </div>
+        <h5 class="font-semibold mb-2" style="font-size: 1.05rem; color: #1E293B;">Lumpsum Calculator</h5>
+        <p class="text-sm mb-4 flex-1" style="color: #64748B;">Calculate returns on a one-time lumpsum mutual fund investment.</p>
+        <a href="lumpsum-calculator/index.html" class="inline-block text-white text-sm font-semibold px-5 py-2 rounded-lg mt-2 no-underline" style="background: #4F46E5;">Open Calculator</a>
+      </div>
+
+      <!-- CAGR Calculator (Coming Soon) -->
+      <div class="bg-white rounded-2xl flex flex-col items-center text-center p-6 opacity-75" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4" style="background: #F1F5F9;">
+          <i class="ph ph-chart-bar" style="font-size: 1.75rem; color: #94A3B8;"></i>
+        </div>
+        <h5 class="font-semibold mb-2" style="font-size: 1.05rem; color: #1E293B;">CAGR Calculator</h5>
+        <p class="text-sm mb-4 flex-1" style="color: #64748B;">Find the Compound Annual Growth Rate of your investments.</p>
+        <button class="text-sm font-medium px-5 py-2 rounded-lg mt-2 cursor-not-allowed" style="border: 1px solid #CBD5E1; color: #94A3B8;" disabled>Coming Soon</button>
+      </div>
+
+      <!-- SWP Calculator (Coming Soon) -->
+      <div class="bg-white rounded-2xl flex flex-col items-center text-center p-6 opacity-75" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4" style="background: #F1F5F9;">
+          <i class="ph ph-arrows-counter-clockwise" style="font-size: 1.75rem; color: #94A3B8;"></i>
+        </div>
+        <h5 class="font-semibold mb-2" style="font-size: 1.05rem; color: #1E293B;">SWP Calculator</h5>
+        <p class="text-sm mb-4 flex-1" style="color: #64748B;">Plan your Systematic Withdrawal Plan from mutual fund investments.</p>
+        <button class="text-sm font-medium px-5 py-2 rounded-lg mt-2 cursor-not-allowed" style="border: 1px solid #CBD5E1; color: #94A3B8;" disabled>Coming Soon</button>
+      </div>
+
+      <!-- Expense Ratio (Coming Soon) -->
+      <div class="bg-white rounded-2xl flex flex-col items-center text-center p-6 opacity-75" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4" style="background: #F1F5F9;">
+          <i class="ph ph-trend-down" style="font-size: 1.75rem; color: #94A3B8;"></i>
+        </div>
+        <h5 class="font-semibold mb-2" style="font-size: 1.05rem; color: #1E293B;">Expense Ratio Impact</h5>
+        <p class="text-sm mb-4 flex-1" style="color: #64748B;">See how the expense ratio affects your long-term mutual fund returns.</p>
+        <button class="text-sm font-medium px-5 py-2 rounded-lg mt-2 cursor-not-allowed" style="border: 1px solid #CBD5E1; color: #94A3B8;" disabled>Coming Soon</button>
+      </div>
+
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="text-center py-4 text-muted border-top bg-white mt-4">
-    <small>© 2026 Mutual Fund Calculator — Licensed under <a href="../LICENSE" target="_blank">MIT License</a> · Free to reuse with attribution.</small>
+  <footer class="text-center py-5 text-sm bg-white mt-4" style="border-top: 1px solid #E2E8F0; color: #64748B;">
+    <small>© 2026 Mutual Fund Calculator — Licensed under <a href="../LICENSE" target="_blank" style="color: #4F46E5; text-decoration: none;">MIT License</a> · Free to reuse with attribution.</small>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
