@@ -301,9 +301,14 @@
       const durationSubtext = document.getElementById('durationSubtext');
 
       if (result.isIndefinite) {
+        const monthlyRate     = annualRate / 100 / 12;
+        const monthlyInterest = corpus * monthlyRate;
+        const monthlySurplus  = monthlyInterest - withdrawal;
         durationDisplay.style.background = 'rgba(212,175,55,0.1)';
         durationText.textContent    = '∞';
-        durationSubtext.textContent = 'Your corpus grows indefinitely — Wealth Preservation Mode!';
+        durationSubtext.textContent =
+          'Monthly interest earned (' + formatINR(Math.round(monthlyInterest)) + ') > withdrawal (' +
+          formatINR(withdrawal) + ') — corpus grows by ' + formatINR(Math.round(monthlySurplus)) + '/mo!';
       } else {
         durationDisplay.style.background = 'rgba(255,255,255,0.05)';
         const yrs = result.years > 0 ? result.years + ' yrs' : '';
@@ -314,7 +319,7 @@
 
       // Result cards
       document.getElementById('withdrawalDisplay').textContent = formatINR(withdrawal);
-      document.getElementById('totalWithdrawn').textContent    = result.isIndefinite ? '∞' : formatINR(result.totalWithdrawn);
+      document.getElementById('totalWithdrawn').textContent    = result.isIndefinite ? formatINR(withdrawal * 12) + '/yr' : formatINR(result.totalWithdrawn);
       document.getElementById('corpusDisplay').textContent     = formatINR(corpus);
 
       // Inflation note (reuse durationSubtext for inflation impact if enabled)
