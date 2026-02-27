@@ -4,309 +4,234 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Lumpsum Growth Planner — Wealth Builder</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-
-    /* Slider base */
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.18);
-      outline: none;
-      cursor: pointer;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #D4AF37;
-      cursor: pointer;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 8px rgba(212,175,55,0.45);
-    }
-    input[type="range"]::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #D4AF37;
-      cursor: pointer;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 8px rgba(212,175,55,0.45);
-    }
-    /* Inflation slider thumb keeps gold but slightly amber */
-    input[type="range"].inflation-range::-webkit-slider-thumb {
-      background: #D4AF37;
-    }
-    input[type="range"].inflation-range::-moz-range-thumb {
-      background: #D4AF37;
-    }
-
-    .toggle-track { transition: background-color 0.2s ease; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); background-attachment: fixed; color: #fff; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.2); outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; box-shadow: 0 2px 6px rgba(212,175,55,0.5); }
+    input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; }
+    .card { background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 28px; }
+    .val-badge { display: inline-block; background: rgba(212,175,55,0.15); color: #D4AF37; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 4px 14px; font-size: 0.875rem; font-weight: 700; }
+    .result-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; text-align: center; }
+    .result-card .label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+    .result-card .value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .results-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .future-value-card { background: linear-gradient(135deg, #B8860B, #D4AF37); border-radius: 16px; padding: 24px; text-align: center; }
+    .future-value-card .fv-label { font-size: 0.9rem; font-weight: 600; color: rgba(26,35,126,0.7); margin-bottom: 6px; }
+    .future-value-card .fv-value { font-size: 2.4rem; font-weight: 800; color: #1A237E; line-height: 1; margin-bottom: 6px; }
+    .future-value-card .fv-sub { font-style: italic; font-size: 0.85rem; color: rgba(26,35,126,0.6); }
+    .toggle-wrap { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+    .toggle-track { width: 44px; height: 24px; border-radius: 12px; background: rgba(255,255,255,0.2); position: relative; flex-shrink: 0; transition: background 0.2s; }
+    .toggle-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+    th { background: rgba(212,175,55,0.15); color: #D4AF37; padding: 10px 12px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+    .section { padding: 32px 16px; max-width: 720px; margin: 0 auto; }
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0; }
     .donut-chart { transform: rotate(-90deg); }
-    .donut-center-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    /* Glass card */
-    .glass-card {
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 1rem;
-    }
-
-    /* Divider */
-    .wb-divider {
-      border-color: rgba(255,255,255,0.12);
-      margin: 1.5rem 0;
-    }
-
-    /* Muted text */
-    .text-muted { color: rgba(255,255,255,0.7); }
-
-    /* Value badge */
-    .val-badge {
-      background: rgba(212,175,55,0.18);
-      color: #D4AF37;
-      border: 1.5px solid rgba(212,175,55,0.35);
-      border-radius: 9999px;
-      padding: 2px 14px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-
-    table { border-collapse: collapse; }
+    .donut-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    @media (max-width: 640px) { .results-grid-2 { grid-template-columns: 1fr; } .future-value-card .fv-value { font-size: 1.8rem; } }
   </style>
 </head>
-<body class="min-h-screen" style="background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); background-attachment: fixed;">
+<body>
 
   <!-- Navbar -->
-  <nav style="background: #0D1B4B; min-height: 64px; border-bottom: 1.5px solid rgba(212,175,55,0.25);" class="px-4 flex items-center shadow-lg">
-    <div class="max-w-3xl mx-auto w-full flex items-center justify-between">
-      <a href="../index.html" class="flex items-center gap-2 no-underline" style="text-decoration:none;">
-        <i class="ph ph-coins" style="font-size: 1.6rem; color: #D4AF37;"></i>
-        <div>
-          <div class="font-bold leading-tight" style="font-size: 1.05rem; color: #D4AF37; letter-spacing: 0.5px;">Wealth Builder</div>
-          <div style="font-size: 0.7rem; color: rgba(255,255,255,0.55); letter-spacing: 0.3px;">Lumpsum Growth Planner</div>
-        </div>
+  <nav style="background:#0D1B4B;height:64px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid rgba(212,175,55,0.2);position:sticky;top:0;z-index:10;">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:720px;margin:0 auto;">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <i class="ph ph-chart-line-up" style="color:#D4AF37;font-size:1.5rem;"></i>
+        <span style="color:#D4AF37;font-weight:700;font-size:1.1rem;">Wealth Builder</span>
       </a>
-      <a href="../index.html" class="flex items-center gap-1 text-xs no-underline" style="color: rgba(255,255,255,0.6); text-decoration:none;">
-        <i class="ph ph-arrow-left"></i> All Calculators
-      </a>
+      <span style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Lumpsum Calculator</span>
     </div>
   </nav>
 
-  <!-- Page Hero -->
-  <section class="text-center pt-8 pb-5 px-4">
-    <div class="max-w-3xl mx-auto">
-      <div class="flex items-center justify-center gap-2 mb-2">
-        <i class="ph ph-chart-line-up" style="font-size: 1.8rem; color: #D4AF37;"></i>
-        <h1 class="font-bold" style="font-size: 1.6rem; color: #fff; letter-spacing: 0.2px;">Lumpsum Calculator</h1>
-      </div>
-      <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Calculate growth on a one-time mutual fund investment</p>
+  <!-- Hero -->
+  <section style="background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.08);padding:24px 16px;text-align:center;">
+    <div style="max-width:720px;margin:0 auto;">
+      <h1 style="font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <i class="ph ph-package" style="color:#D4AF37;"></i> Lumpsum Growth Planner
+      </h1>
+      <p style="color:rgba(255,255,255,0.6);font-size:0.9rem;">Calculate returns on a one-time lumpsum mutual fund investment</p>
     </div>
   </section>
 
-  <!-- Main Content -->
-  <section class="pb-10 px-4">
-    <div class="max-w-3xl mx-auto">
+  <!-- Main -->
+  <section class="section">
 
-      <!-- Calculator Card -->
-      <div class="glass-card p-6 md:p-8">
+    <div class="card">
 
-        <!-- One-time Investment Amount -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">One-time Investment (Rs.)</label>
-            <span id="principalVal" class="val-badge">Rs. 1,00,000</span>
-          </div>
-          <input type="range" id="principal" min="10000" max="5000000" step="10000" value="100000" class="w-full">
-          <div class="flex justify-between mt-1 text-xs text-muted">
-            <span>Rs. 10,000</span><span>Rs. 50,00,000</span>
-          </div>
+      <!-- One-time Investment -->
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:#fff;">One-time Investment (Rs.)</label>
+          <span id="principalVal" class="val-badge">Rs. 1,00,000</span>
         </div>
-
-        <!-- Expected Return Rate -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">Expected Annual Return (%)</label>
-            <span id="rateVal" class="val-badge">12%</span>
-          </div>
-          <input type="range" id="rate" min="1" max="30" step="0.5" value="12" class="w-full">
-          <div class="flex justify-between mt-1 text-xs text-muted">
-            <span>1%</span><span>30%</span>
-          </div>
+        <input type="range" id="principal" min="10000" max="5000000" step="10000" value="100000">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>Rs. 10,000</span><span>Rs. 50,00,000</span>
         </div>
-
-        <!-- Time Period -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">Time Period (Years)</label>
-            <span id="yearsVal" class="val-badge">10 Yrs</span>
-          </div>
-          <input type="range" id="years" min="1" max="40" step="1" value="10" class="w-full">
-          <div class="flex justify-between mt-1 text-xs text-muted">
-            <span>1 Yr</span><span>40 Yrs</span>
-          </div>
-        </div>
-
-        <hr class="wb-divider" />
-
-        <!-- Result Cards: Row 1 — Invested | Returns -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-          <div class="glass-card p-4 text-center">
-            <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-              <i class="ph ph-wallet"></i> Invested Amount
-            </div>
-            <div class="font-bold text-lg text-white" id="invested">—</div>
-          </div>
-          <div class="glass-card p-4 text-center">
-            <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-              <i class="ph ph-trend-up"></i> Estimated Returns
-            </div>
-            <div class="font-bold text-lg" id="returns" style="color: #D4AF37;">—</div>
-          </div>
-        </div>
-
-        <!-- Result Card: Row 2 — Future Value (full width, gold gradient) -->
-        <div class="rounded-2xl p-6 text-center" style="background: linear-gradient(135deg, #B8860B 0%, #D4AF37 100%); box-shadow: 0 6px 32px rgba(212,175,55,0.35);">
-          <div class="text-sm font-semibold mb-1" style="color: rgba(0,0,0,0.6); letter-spacing: 0.5px; text-transform: uppercase;">Future Value</div>
-          <div class="font-extrabold" id="total" style="font-size: 2.4rem; color: #0D1B4B; line-height: 1.15; letter-spacing: -0.5px;">—</div>
-          <div class="mt-1 text-sm italic" style="color: rgba(0,0,0,0.5);">Your wealth potential</div>
-        </div>
-
-        <!-- Donut Chart -->
-        <div class="mt-6 text-center">
-          <div class="relative inline-block" style="width: 200px; height: 200px;">
-            <svg viewBox="0 0 100 100" class="donut-chart" width="200" height="200">
-              <circle id="donutBg" cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="18" />
-              <circle id="donutReturns" cx="50" cy="50" r="40" fill="none" stroke="#D4AF37" stroke-width="18"
-                stroke-dasharray="0 251.2" stroke-linecap="round" />
-              <circle id="donutInvested" cx="50" cy="50" r="40" fill="none" stroke="#3949AB" stroke-width="18"
-                stroke-dasharray="251.2 0" stroke-linecap="round" />
-            </svg>
-            <div class="donut-center-text">
-              <div class="text-xs text-muted">Total</div>
-              <div class="font-bold" id="chartTotal" style="font-size: 0.85rem; color: #D4AF37;">—</div>
-            </div>
-          </div>
-          <div class="flex items-center justify-center gap-5 mt-2">
-            <div class="flex items-center gap-1.5">
-              <span class="inline-block rounded-full" style="width: 12px; height: 12px; background: #3949AB;"></span>
-              <span class="text-xs text-muted">Invested</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="inline-block rounded-full" style="width: 12px; height: 12px; background: #D4AF37;"></span>
-              <span class="text-xs text-muted">Returns</span>
-            </div>
-          </div>
-        </div>
-
-        <hr class="wb-divider" />
-
-        <!-- Inflation Toggle -->
-        <div class="mb-4">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <div class="relative">
-              <input type="checkbox" id="inflationToggle" class="sr-only">
-              <div id="inflationTrack" class="toggle-track w-11 h-6 rounded-full" style="background: rgba(255,255,255,0.2);"></div>
-              <div id="inflationThumb" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200" style="transform: translateX(0);"></div>
-            </div>
-            <div>
-              <div class="flex items-center gap-1.5 text-sm font-semibold text-white">
-                <i class="ph ph-thermometer" style="color: #D4AF37;"></i>
-                Show Inflation-Adjusted Value
-              </div>
-              <div class="text-xs mt-0.5 text-muted">See what your returns are worth in today's money after adjusting for inflation.</div>
-            </div>
-          </label>
-        </div>
-
-        <!-- Inflation Rate Slider (hidden by default) -->
-        <div class="mb-6" id="inflationSection" style="display:none;">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">Expected Annual Inflation Rate (%)</label>
-            <span id="inflationVal" class="val-badge">6%</span>
-          </div>
-          <input type="range" class="inflation-range w-full" id="inflation" min="1" max="15" step="0.5" value="6">
-          <div class="flex justify-between mt-1 text-xs text-muted"><span>1%</span><span>15%</span></div>
-        </div>
-
-        <!-- Inflation-Adjusted Result Section (hidden by default) -->
-        <div id="inflationResultSection" style="display:none;" class="mt-2">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="glass-card p-4 text-center" style="border-color: rgba(212,175,55,0.3);">
-              <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-                <i class="ph ph-coins"></i> Inflation-Adjusted Value
-              </div>
-              <div class="font-bold text-lg" id="inflationAdjustedValue" style="color: #D4AF37;">—</div>
-              <div class="text-xs mt-1 text-muted">(In today's money)</div>
-            </div>
-            <div class="glass-card p-4 text-center">
-              <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-                <i class="ph ph-trend-down"></i> Purchasing Power Loss
-              </div>
-              <div class="font-bold text-lg" id="purchasingPowerLoss" style="color: #F87171;">—</div>
-              <div class="text-xs mt-1 text-muted">(Eroded by inflation)</div>
-            </div>
-          </div>
-          <div class="mt-3 p-3 rounded-xl text-center text-xs" style="background: rgba(212,175,55,0.1); border: 1.5px solid rgba(212,175,55,0.25); color: rgba(255,255,255,0.8);" id="inflationCalloutText">—</div>
-        </div>
-
-        <p class="text-center mt-6 text-xs text-muted">
-          * Estimated returns are based on a fixed rate and are for illustration purposes only. Actual returns may vary.
-        </p>
-
       </div>
 
-      <!-- Year-by-Year Growth Table -->
-      <div class="mt-6">
-        <div class="glass-card p-6">
-          <h6 class="font-bold mb-2 flex items-center gap-2" style="color: #D4AF37;">
-            <i class="ph ph-table"></i> Year-by-Year Growth Breakdown
-          </h6>
-          <p class="text-xs mb-4 text-muted">
-            The table below shows how your lumpsum investment grows each year at the specified annual return rate.
-          </p>
-          <div class="overflow-x-auto rounded-xl">
-            <table class="w-full text-sm" style="border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden;">
-              <thead>
-                <tr style="background: rgba(212,175,55,0.12);">
-                  <th class="text-center p-3 font-semibold text-xs uppercase tracking-wide" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">Year</th>
-                  <th class="text-right p-3 font-semibold text-xs uppercase tracking-wide" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">Invested (Rs.)</th>
-                  <th class="text-right p-3 font-semibold text-xs uppercase tracking-wide" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">Gains (Rs.)</th>
-                  <th class="text-right p-3 font-semibold text-xs uppercase tracking-wide" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">Total Value (Rs.)</th>
-                </tr>
-              </thead>
-              <tbody id="growthTableBody"></tbody>
-            </table>
+      <!-- Expected Return -->
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:#fff;">Expected Annual Return (%)</label>
+          <span id="rateVal" class="val-badge">12%</span>
+        </div>
+        <input type="range" id="rate" min="1" max="30" step="0.5" value="12">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>1%</span><span>30%</span>
+        </div>
+      </div>
+
+      <!-- Time Period -->
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:#fff;">Time Period (Years)</label>
+          <span id="yearsVal" class="val-badge">10 Yrs</span>
+        </div>
+        <input type="range" id="years" min="1" max="40" step="1" value="10">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>1 Yr</span><span>40 Yrs</span>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Results -->
+      <div class="results-grid-2">
+        <div class="result-card">
+          <div class="label">Invested Amount</div>
+          <div class="value" id="invested">—</div>
+        </div>
+        <div class="result-card">
+          <div class="label">Estimated Returns</div>
+          <div class="value" id="returns" style="color:#34D399;">—</div>
+        </div>
+      </div>
+      <div class="future-value-card">
+        <div class="fv-label">Future Value</div>
+        <div class="fv-value" id="total">—</div>
+        <div class="fv-sub">Your wealth potential</div>
+      </div>
+
+      <!-- Donut Chart -->
+      <div style="margin-top:24px;text-align:center;">
+        <div style="position:relative;display:inline-block;width:200px;height:200px;">
+          <svg viewBox="0 0 100 100" class="donut-chart" width="200" height="200">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="18"/>
+            <circle id="donutReturns" cx="50" cy="50" r="40" fill="none" stroke="#D4AF37" stroke-width="18" stroke-dasharray="0 251.2" stroke-linecap="round"/>
+            <circle id="donutInvested" cx="50" cy="50" r="40" fill="none" stroke="#3949AB" stroke-width="18" stroke-dasharray="251.2 0" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-center-text">
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.6);">Total</div>
+            <div id="chartTotal" style="font-size:0.9rem;font-weight:700;color:#D4AF37;">—</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-top:8px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:50%;background:#3949AB;display:inline-block;"></span>
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.6);">Invested</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:12px;height:12px;border-radius:50%;background:#D4AF37;display:inline-block;"></span>
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.6);">Returns</span>
           </div>
         </div>
       </div>
 
-      <div class="text-center mt-6">
-        <a href="../index.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2 rounded-lg no-underline transition-opacity hover:opacity-80" style="color: #D4AF37; border: 1.5px solid rgba(212,175,55,0.5); text-decoration:none;">
-          <i class="ph ph-arrow-left"></i> Back to All Calculators
-        </a>
+      <hr>
+
+      <!-- Inflation Toggle -->
+      <div style="margin-bottom:16px;">
+        <label class="toggle-wrap">
+          <input type="checkbox" id="inflationToggle" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;">
+          <div style="position:relative;flex-shrink:0;">
+            <div id="inflationTrack" class="toggle-track"></div>
+            <div id="inflationThumb" class="toggle-thumb"></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.875rem;font-weight:600;color:#fff;">
+              <i class="ph ph-thermometer" style="color:#D4AF37;"></i>
+              Show Inflation-Adjusted Value
+            </div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);margin-top:2px;">See what your returns are worth in today's money after adjusting for inflation.</div>
+          </div>
+        </label>
       </div>
+
+      <!-- Inflation Rate Slider -->
+      <div id="inflationSection" style="display:none;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:0.875rem;font-weight:600;color:#fff;">Expected Annual Inflation Rate (%)</label>
+          <span id="inflationVal" class="val-badge">6%</span>
+        </div>
+        <input type="range" id="inflation" min="1" max="15" step="0.5" value="6">
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+          <span>1%</span><span>15%</span>
+        </div>
+      </div>
+
+      <!-- Inflation Result Section -->
+      <div id="inflationResultSection" style="display:none;margin-top:12px;">
+        <div class="results-grid-2">
+          <div class="result-card" style="background:rgba(217,119,6,0.1);border-color:rgba(217,119,6,0.3);">
+            <div class="label"><i class="ph ph-coins"></i> Inflation-Adjusted Value</div>
+            <div class="value" id="inflationAdjustedValue" style="color:#FCD34D;">—</div>
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:4px;">(In today's money)</div>
+          </div>
+          <div class="result-card">
+            <div class="label"><i class="ph ph-trend-down"></i> Purchasing Power Loss</div>
+            <div class="value" id="purchasingPowerLoss" style="color:#F87171;">—</div>
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:4px;">(Eroded by inflation)</div>
+          </div>
+        </div>
+        <div id="inflationCalloutText" style="display:none;margin-top:10px;padding:12px;border-radius:10px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);font-size:0.8rem;color:rgba(255,255,255,0.7);text-align:center;">—</div>
+      </div>
+
+      <p style="text-align:center;margin-top:24px;font-size:0.75rem;color:rgba(255,255,255,0.5);">
+        * Estimated returns are based on a fixed rate and are for illustration purposes only. Actual returns may vary.
+      </p>
 
     </div>
+
+    <!-- Year-by-Year Growth Table -->
+    <div class="card" style="margin-top:24px;">
+      <h6 style="color:#D4AF37;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+        <i class="ph ph-table"></i> Year-by-Year Growth Breakdown
+      </h6>
+      <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-bottom:16px;">How your lumpsum grows each year.</p>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:center;">Year</th>
+              <th style="text-align:right;">Invested (Rs.)</th>
+              <th style="text-align:right;">Gains (Rs.)</th>
+              <th style="text-align:right;">Total Value (Rs.)</th>
+            </tr>
+          </thead>
+          <tbody id="growthTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Back link -->
+    <div style="text-align:center;margin-top:24px;">
+      <a href="../index.html" style="display:inline-flex;align-items:center;gap:8px;color:#D4AF37;border:1px solid rgba(212,175,55,0.4);padding:10px 20px;border-radius:8px;font-size:0.875rem;font-weight:600;text-decoration:none;">
+        <i class="ph ph-arrow-left"></i> Back to All Calculators
+      </a>
+    </div>
+
   </section>
 
-  <footer class="text-center py-5 text-sm mt-4" style="border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);">
-    <small>© 2026 Mutual Fund Calculator — Licensed under MIT License. Free to reuse with attribution.</small>
+  <footer style="background:#0D1B4B;border-top:1px solid rgba(212,175,55,0.2);padding:20px;text-align:center;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:32px;">
+    © 2026 Wealth Builder — Licensed under <a href="../../LICENSE" style="color:#D4AF37;text-decoration:none;">MIT License</a>. Free to reuse with attribution.
   </footer>
 
   <script src="../assets/js/app.js"></script>
@@ -329,7 +254,6 @@
       }
     }
 
-    // Inflation toggle
     const inflationTrack = document.getElementById("inflationTrack");
     const inflationThumb = document.getElementById("inflationThumb");
     inflationToggle.addEventListener("change", function () {
@@ -346,7 +270,7 @@
 
     function updateDonutChart(totalInvested, estimatedReturns) {
       const total = totalInvested + estimatedReturns;
-      const circumference = 2 * Math.PI * 40; // r=40
+      const circumference = 2 * Math.PI * 40;
       const investedFraction = totalInvested / total;
       const returnsFraction  = estimatedReturns / total;
 
@@ -357,9 +281,11 @@
       const donutInvested = document.getElementById("donutInvested");
       const donutReturns  = document.getElementById("donutReturns");
 
+      donutInvested.setAttribute("stroke", "#3949AB");
       donutInvested.setAttribute("stroke-dasharray", investedDash + " " + (circumference - investedDash));
       donutInvested.setAttribute("stroke-dashoffset", "0");
 
+      donutReturns.setAttribute("stroke", "#D4AF37");
       donutReturns.setAttribute("stroke-dasharray", returnsDash + " " + (circumference - returnsDash));
       donutReturns.setAttribute("stroke-dashoffset", -returnsOffset);
 
@@ -374,12 +300,11 @@
         const value = P * Math.pow(1 + r, y);
         const gains = value - P;
         const tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid rgba(255,255,255,0.08)";
         tr.innerHTML =
-          '<td class="text-center p-3 font-semibold text-xs" style="color: rgba(255,255,255,0.9);">Year ' + y + '</td>' +
-          '<td class="text-right p-3 text-xs" style="color: rgba(255,255,255,0.7);">' + Math.round(P).toLocaleString("en-IN") + '</td>' +
-          '<td class="text-right p-3 text-xs font-semibold" style="color: #D4AF37;">' + Math.round(gains).toLocaleString("en-IN") + '</td>' +
-          '<td class="text-right p-3 text-xs font-semibold" style="color: #fff;">' + Math.round(value).toLocaleString("en-IN") + '</td>';
+          '<td style="text-align:center;color:rgba(255,255,255,0.9);font-weight:600;">Year ' + y + '</td>' +
+          '<td style="text-align:right;color:rgba(255,255,255,0.7);">' + Math.round(P).toLocaleString("en-IN") + '</td>' +
+          '<td style="text-align:right;color:#D4AF37;font-weight:600;">' + Math.round(gains).toLocaleString("en-IN") + '</td>' +
+          '<td style="text-align:right;color:#D4AF37;font-weight:600;">' + Math.round(value).toLocaleString("en-IN") + '</td>';
         tbody.appendChild(tr);
       }
     }
@@ -402,7 +327,6 @@
       updateDonutChart(totalInvested, estimatedReturns);
       renderGrowthTable(P, annualRate, years);
 
-      // Inflation-adjusted calculation
       if (inflationToggle.checked) {
         const inflationRate = Number(inflationSlider.value);
         const { inflationAdjustedValue, purchasingPowerLoss } = calculateInflationAdjusted(futureValue, inflationRate, years);
@@ -412,6 +336,9 @@
           "In today\u2019s money, your corpus of " + formatINR(futureValue) +
           " will be worth " + formatINR(inflationAdjustedValue) +
           " after accounting for " + inflationRate + "% annual inflation over " + years + " years.";
+        document.getElementById("inflationCalloutText").style.display = "block";
+      } else {
+        document.getElementById("inflationCalloutText").style.display = "none";
       }
     }
 
