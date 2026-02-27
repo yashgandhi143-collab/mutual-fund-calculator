@@ -1,58 +1,56 @@
-/* =============================================
-   Mutual Fund Calculator — Global Styles
-   License: MIT — Free to reuse with attribution
-   ============================================= */
-
-/* Body */
+/* ===========================
+   Global Styles
+   =========================== */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
 }
 
-/* Navbar */
+/* ===========================
+   Navbar
+   =========================== */
 .navbar-brand {
   font-size: 1.3rem;
   letter-spacing: 0.5px;
 }
 
-/* Hero Section */
-section.bg-white h1 {
-  letter-spacing: -0.5px;
-}
-
-/* Calculator Cards on Home */
+/* ===========================
+   Calculator Cards (Home Page)
+   =========================== */
 .card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-radius: 12px !important;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Result Cards */
+/* ===========================
+   Result Cards (Calculator Pages)
+   =========================== */
 .result-card {
   border-radius: 10px;
+  transition: box-shadow 0.2s ease;
 }
 
-/* Range Slider */
+.result-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ===========================
+   Range Sliders
+   =========================== */
 .form-range::-webkit-slider-thumb {
-  background: #0d6efd;
+  background-color: #0d6efd;
 }
 
 .form-range::-moz-range-thumb {
-  background: #0d6efd;
+  background-color: #0d6efd;
 }
 
-/* Badge */
-.badge.bg-primary {
-  font-size: 0.95rem !important;
-  padding: 6px 12px;
-  border-radius: 8px;
-}
-
-/* Footer */
+/* ===========================
+   Footer
+   =========================== */
 footer {
   font-size: 0.85rem;
 }
@@ -64,4 +62,19 @@ footer a {
 
 footer a:hover {
   text-decoration: underline;
+}
+
+/* ===========================
+   Badge (Slider Values)
+   =========================== */
+.badge.bg-primary {
+  font-size: 0.95rem !important;
+  padding: 0.4em 0.75em;
+}
+
+/* ===========================
+   Utility
+   =========================== */
+.opacity-75 {
+  opacity: 0.75;
 }
