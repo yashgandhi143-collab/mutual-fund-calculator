@@ -81,6 +81,20 @@ function calculateTopUpSIP(P, annualRate, years, topUpRate) {
 }
 
 /**
+ * Calculate Inflation-Adjusted (Real) Value
+ * Formula: nominalValue / (1 + inflationRate/100)^years
+ * @param {number} nominalValue - The future value (corpus)
+ * @param {number} inflationRate - Annual inflation rate in %
+ * @param {number} years - Investment duration in years
+ * @returns {object} { inflationAdjustedValue, purchasingPowerLoss }
+ */
+function calculateInflationAdjusted(nominalValue, inflationRate, years) {
+  const inflationAdjustedValue = nominalValue / Math.pow(1 + inflationRate / 100, years);
+  const purchasingPowerLoss = nominalValue - inflationAdjustedValue;
+  return { inflationAdjustedValue, purchasingPowerLoss };
+}
+
+/**
  * Calculate Lumpsum Future Value
  * Formula: P x (1 + r)^n
  * @param {number} P - One-time investment amount
