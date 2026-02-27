@@ -226,34 +226,7 @@
 
   <script src="../assets/js/app.js"></script>
   <script>
-    function calculateSTP(lumpSum, monthlyTransfer, debtRate, equityRate, months) {
-      const dr = debtRate / 100 / 12;
-      const er = equityRate / 100 / 12;
-      let debtCorpus = lumpSum;
-      let equityCorpus = 0;
-      let totalTransferred = 0;
-      const breakdown = [];
-
-      for (let m = 1; m <= months; m++) {
-        debtCorpus = debtCorpus * (1 + dr);
-        const transfer = Math.min(monthlyTransfer, debtCorpus);
-        debtCorpus -= transfer;
-        totalTransferred += transfer;
-        equityCorpus = (equityCorpus + transfer) * (1 + er);
-        breakdown.push({
-          month: m,
-          debtCorpus: Math.round(debtCorpus),
-          equityCorpus: Math.round(equityCorpus),
-          totalCorpus: Math.round(debtCorpus + equityCorpus)
-        });
-      }
-
-      const totalCorpus = debtCorpus + equityCorpus;
-      const directEquityValue = lumpSum * Math.pow(1 + equityRate / 100 / 12, months);
-      const debtOnlyValue = lumpSum * Math.pow(1 + debtRate / 100 / 12, months);
-
-      return { debtCorpus, equityCorpus, totalCorpus, totalTransferred, breakdown, directEquityValue, debtOnlyValue };
-    }
+    // calculateSTP is defined in ../assets/js/app.js
 
     function renderSTPTable(breakdown) {
       const tbody = document.getElementById('stpTableBody');
@@ -311,9 +284,8 @@
       document.getElementById('vsDebtVal').textContent = formatINR(r.debtOnlyValue);
       compBadge(r.totalCorpus, r.debtOnlyValue, document.getElementById('vsDebtBadge'));
 
-      // Table
-      const showAll = months <= 24;
-      renderSTPTable(showAll ? r.breakdown : r.breakdown.slice(0, 12));
+      // Table — show all months
+      renderSTPTable(r.breakdown);
     }
 
     function wire(sliderId, badgeId, formatter) {
