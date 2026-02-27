@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lumpsum Calculator — Mutual Fund Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <style>
+    .chart-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto;
+    }
+    .donut-chart {
+      transform: rotate(-90deg);
+    }
+    .donut-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="../index.html">📈 Mutual Fund Calculator</a>
+      <span class="navbar-text text-white">Lumpsum Calculator</span>
+    </div>
+  </nav>
+
+  <section class="py-4 text-center bg-white border-bottom">
+    <div class="container">
+      <h1 class="h3 fw-bold text-primary">📦 Lumpsum Calculator</h1>
+      <p class="text-muted mb-0">Calculate returns on a one-time lumpsum mutual fund investment</p>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container" style="max-width: 860px;">
+      <div class="card shadow-sm border-0 p-4">
+
+        <!-- One-time Investment Amount -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-semibold">One-time Investment (Rs.)</label>
+            <span class="badge bg-primary fs-6" id="principalVal">Rs. 1,00,000</span>
+          </div>
+          <input type="range" class="form-range" id="principal" min="10000" max="5000000" step="10000" value="100000">
+          <div class="d-flex justify-content-between text-muted small"><span>Rs. 10,000</span><span>Rs. 50,00,000</span></div>
+        </div>
+
+        <!-- Expected Return Rate -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-semibold">Expected Annual Return (%)</label>
+            <span class="badge bg-primary fs-6" id="rateVal">12%</span>
+          </div>
+          <input type="range" class="form-range" id="rate" min="1" max="30" step="0.5" value="12">
+          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>30%</span></div>
+        </div>
+
+        <!-- Time Period -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-semibold">Time Period (Years)</label>
+            <span class="badge bg-primary fs-6" id="yearsVal">10 Yrs</span>
+          </div>
+          <input type="range" class="form-range" id="years" min="1" max="40" step="1" value="10">
+          <div class="d-flex justify-content-between text-muted small"><span>1 Yr</span><span>40 Yrs</span></div>
+        </div>
+
+        <hr />
+
+        <!-- Result Summary Cards -->
+        <div class="row text-center g-3 mt-1">
+          <div class="col-md-4">
+            <div class="result-card p-3 rounded bg-light border">
+              <div class="text-muted small mb-1">Invested Amount</div>
+              <div class="fw-bold fs-5 text-dark" id="invested">—</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="result-card p-3 rounded bg-light border">
+              <div class="text-muted small mb-1">Estimated Returns</div>
+              <div class="fw-bold fs-5 text-success" id="returns">—</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="result-card p-3 rounded bg-primary border">
+              <div class="text-white small mb-1">Total Value</div>
+              <div class="fw-bold fs-5 text-white" id="total">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="mt-4 text-center">
+          <div class="chart-container">
+            <svg viewBox="0 0 100 100" class="donut-chart" width="200" height="200">
+              <circle id="donutBg" cx="50" cy="50" r="40" fill="none" stroke="#e9ecef" stroke-width="18" />
+              <circle id="donutReturns" cx="50" cy="50" r="40" fill="none" stroke="#198754" stroke-width="18"
+                stroke-dasharray="0 251.2" stroke-linecap="round" />
+              <circle id="donutInvested" cx="50" cy="50" r="40" fill="none" stroke="#0d6efd" stroke-width="18"
+                stroke-dasharray="251.2 0" stroke-linecap="round" />
+            </svg>
+            <div class="donut-center-text">
+              <div class="text-muted small">Total</div>
+              <div class="fw-bold text-primary" id="chartTotal" style="font-size: 0.9rem;">—</div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-center gap-4 mt-2">
+            <div class="d-flex align-items-center gap-1">
+              <span class="rounded-circle d-inline-block" style="width:12px;height:12px;background:#0d6efd;"></span>
+              <span class="small text-muted">Invested</span>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="rounded-circle d-inline-block" style="width:12px;height:12px;background:#198754;"></span>
+              <span class="small text-muted">Returns</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="mt-4" />
+
+        <!-- Inflation-Adjusted Toggle -->
+        <div class="mb-3 mt-2">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="inflationToggle" role="switch">
+            <label class="form-check-label fw-semibold" for="inflationToggle">
+              🌡️ Show Inflation-Adjusted Value
+            </label>
+          </div>
+          <div class="text-muted small mt-1">See what your returns are worth in today's money after adjusting for inflation.</div>
+        </div>
+
+        <!-- Inflation Rate Slider (hidden by default) -->
+        <div class="mb-4" id="inflationSection" style="display:none;">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-semibold">Expected Annual Inflation Rate (%)</label>
+            <span class="badge bg-warning text-dark fs-6" id="inflationVal">6%</span>
+          </div>
+          <input type="range" class="form-range" id="inflation" min="1" max="15" step="0.5" value="6">
+          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>15%</span></div>
+        </div>
+
+        <!-- Inflation-Adjusted Result Section (hidden by default) -->
+        <div id="inflationResultSection" style="display:none;" class="mt-3">
+          <div class="row text-center g-3">
+            <div class="col-md-6">
+              <div class="result-card p-3 rounded border border-warning bg-warning bg-opacity-10">
+                <div class="text-muted small mb-1">💰 Inflation-Adjusted Value</div>
+                <div class="fw-bold fs-5 text-warning" id="inflationAdjustedValue">—</div>
+                <div class="text-muted small mt-1">(In today's money)</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="result-card p-3 rounded bg-light border">
+                <div class="text-muted small mb-1">📉 Purchasing Power Loss</div>
+                <div class="fw-bold fs-5 text-danger" id="purchasingPowerLoss">—</div>
+                <div class="text-muted small mt-1">(Eroded by inflation)</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 p-3 rounded border border-warning bg-warning bg-opacity-10 text-center">
+            <span class="text-dark small" id="inflationCalloutText">—</span>
+          </div>
+        </div>
+
+        <p class="text-muted small mt-4 mb-0 text-center">
+          * Estimated returns are based on a fixed rate and are for illustration purposes only. Actual returns may vary.
+        </p>
+
+      </div>
+
+      <!-- Year-by-Year Growth Table -->
+      <div class="mt-4">
+        <div class="card shadow-sm border-0 p-4">
+          <h6 class="fw-bold text-primary mb-3">📊 Year-by-Year Growth Breakdown</h6>
+          <p class="text-muted small mb-3">
+            The table below shows how your lumpsum investment grows each year at the specified annual return rate.
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover align-middle mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th class="text-center">Year</th>
+                  <th class="text-end">Invested Amount (Rs.)</th>
+                  <th class="text-end">Gains (Rs.)</th>
+                  <th class="text-end">Total Value (Rs.)</th>
+                </tr>
+              </thead>
+              <tbody id="growthTableBody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="../index.html" class="btn btn-outline-primary">Back to All Calculators</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="text-center py-4 text-muted border-top bg-white mt-4">
+    <small>© 2026 Mutual Fund Calculator — Licensed under MIT License. Free to reuse with attribution.</small>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    const principalSlider = document.getElementById("principal");
+    const rateSlider      = document.getElementById("rate");
+    const yearsSlider     = document.getElementById("years");
+    const inflationToggle        = document.getElementById("inflationToggle");
+    const inflationSlider        = document.getElementById("inflation");
+    const inflationSection       = document.getElementById("inflationSection");
+    const inflationResultSection = document.getElementById("inflationResultSection");
+
+    // Show / hide inflation controls
+    inflationToggle.addEventListener("change", function () {
+      inflationSection.style.display       = this.checked ? "block" : "none";
+      inflationResultSection.style.display = this.checked ? "block" : "none";
+      calculate();
+    });
+
+    inflationSlider.addEventListener("input", function () {
+      document.getElementById("inflationVal").textContent = formatPercent(this.value);
+      calculate();
+    });
+
+    function updateDonutChart(totalInvested, estimatedReturns) {
+      const total = totalInvested + estimatedReturns;
+      const circumference = 2 * Math.PI * 40; // r=40
+      const investedFraction = totalInvested / total;
+      const returnsFraction  = estimatedReturns / total;
+
+      const investedDash = investedFraction * circumference;
+      const returnsDash  = returnsFraction  * circumference;
+      const returnsOffset = investedDash;
+
+      const donutInvested = document.getElementById("donutInvested");
+      const donutReturns  = document.getElementById("donutReturns");
+
+      donutInvested.setAttribute("stroke-dasharray", investedDash + " " + (circumference - investedDash));
+      donutInvested.setAttribute("stroke-dashoffset", "0");
+
+      donutReturns.setAttribute("stroke-dasharray", returnsDash + " " + (circumference - returnsDash));
+      donutReturns.setAttribute("stroke-dashoffset", -returnsOffset);
+
+      document.getElementById("chartTotal").textContent = formatINR(total);
+    }
+
+    function renderGrowthTable(P, annualRate, years) {
+      const tbody = document.getElementById("growthTableBody");
+      tbody.innerHTML = "";
+      const r = annualRate / 100;
+      for (let y = 1; y <= years; y++) {
+        const value = P * Math.pow(1 + r, y);
+        const gains = value - P;
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="text-center fw-semibold">Year ' + y + '</td>' +
+          '<td class="text-end">' + Math.round(P).toLocaleString("en-IN") + '</td>' +
+          '<td class="text-end text-success">' + Math.round(gains).toLocaleString("en-IN") + '</td>' +
+          '<td class="text-end text-primary fw-semibold">' + Math.round(value).toLocaleString("en-IN") + '</td>';
+        tbody.appendChild(tr);
+      }
+    }
+
+    function calculate() {
+      const P          = Number(principalSlider.value);
+      const annualRate = Number(rateSlider.value);
+      const years      = Number(yearsSlider.value);
+
+      document.getElementById("principalVal").textContent = formatINR(P);
+      document.getElementById("rateVal").textContent      = formatPercent(annualRate);
+      document.getElementById("yearsVal").textContent     = years + " Yrs";
+
+      const { futureValue, totalInvested, estimatedReturns } = calculateLumpsum(P, annualRate, years);
+
+      document.getElementById("invested").textContent = formatINR(totalInvested);
+      document.getElementById("returns").textContent  = formatINR(estimatedReturns);
+      document.getElementById("total").textContent    = formatINR(futureValue);
+
+      updateDonutChart(totalInvested, estimatedReturns);
+      renderGrowthTable(P, annualRate, years);
+
+      // Inflation-adjusted calculation
+      if (inflationToggle.checked) {
+        const inflationRate = Number(inflationSlider.value);
+        const { inflationAdjustedValue, purchasingPowerLoss } = calculateInflationAdjusted(futureValue, inflationRate, years);
+        document.getElementById("inflationAdjustedValue").textContent = formatINR(inflationAdjustedValue);
+        document.getElementById("purchasingPowerLoss").textContent    = formatINR(purchasingPowerLoss);
+        document.getElementById("inflationCalloutText").textContent   =
+          "In today\u2019s money, your corpus of " + formatINR(futureValue) +
+          " will be worth " + formatINR(inflationAdjustedValue) +
+          " after accounting for " + inflationRate + "% annual inflation over " + years + " years.";
+      }
+    }
+
+    principalSlider.addEventListener("input", calculate);
+    rateSlider.addEventListener("input", calculate);
+    yearsSlider.addEventListener("input", calculate);
+
+    calculate();
+  </script>
+</body>
+</html>
