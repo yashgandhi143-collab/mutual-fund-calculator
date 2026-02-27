@@ -200,18 +200,20 @@
     // ── Core SWP Calculation ──────────────────────────────────────────────────
     function calculateSWP(corpus, monthlyWithdrawal, annualRate) {
       const r = annualRate / 100 / 12;
-      let months = 0;
-      let currentCorpus = corpus;
-      const MAX_MONTHS = 600;
-      while (currentCorpus > 0 && months < MAX_MONTHS) {
-        currentCorpus = currentCorpus * (1 + r) - monthlyWithdrawal;
-        months++;
+      // Corpus is truly indefinite only when monthly interest earned >= monthly withdrawal
+      if (monthlyWithdrawal <= corpus * r) {
+        return { months: 0, years: 0, remainingMonths: 0, totalWithdrawn: 0, isIndefinite: true };
       }
+      // Use annuity formula for exact months to depletion: n = -ln(1 - C*r/W) / ln(1+r)
+      // When r = 0, fall back to simple division: n = corpus / monthlyWithdrawal
+      const n = r === 0
+        ? corpus / monthlyWithdrawal
+        : -Math.log(1 - (corpus * r) / monthlyWithdrawal) / Math.log(1 + r);
+      const months = Math.ceil(n);
       const years = Math.floor(months / 12);
       const remainingMonths = months % 12;
       const totalWithdrawn = monthlyWithdrawal * months;
-      const isIndefinite = months >= MAX_MONTHS;
-      return { months, years, remainingMonths, totalWithdrawn, isIndefinite };
+      return { months, years, remainingMonths, totalWithdrawn, isIndefinite: false };
     }
 
     // ── Meter Update ──────────────────────────────────────────────────────────
