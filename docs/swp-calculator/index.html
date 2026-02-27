@@ -197,24 +197,7 @@
 
   <script src="../assets/js/app.js"></script>
   <script>
-    // ── Core SWP Calculation ──────────────────────────────────────────────────
-    function calculateSWP(corpus, monthlyWithdrawal, annualRate) {
-      const r = annualRate / 100 / 12;
-      // Corpus is truly indefinite only when monthly interest earned >= monthly withdrawal
-      if (monthlyWithdrawal <= corpus * r) {
-        return { months: 0, years: 0, remainingMonths: 0, totalWithdrawn: 0, isIndefinite: true };
-      }
-      // Use annuity formula for exact months to depletion: n = -ln(1 - C*r/W) / ln(1+r)
-      // When r = 0, fall back to simple division: n = corpus / monthlyWithdrawal
-      const n = r === 0
-        ? corpus / monthlyWithdrawal
-        : -Math.log(1 - (corpus * r) / monthlyWithdrawal) / Math.log(1 + r);
-      const months = Math.ceil(n);
-      const years = Math.floor(months / 12);
-      const remainingMonths = months % 12;
-      const totalWithdrawn = monthlyWithdrawal * months;
-      return { months, years, remainingMonths, totalWithdrawn, isIndefinite: false };
-    }
+    // calculateSWP is defined in ../assets/js/app.js
 
     // ── Meter Update ──────────────────────────────────────────────────────────
     function updateMeter(years, isIndefinite) {
@@ -350,14 +333,6 @@
         thumb.style.transform  = '';
       }
       calculate();
-    });
-
-    // Make the toggle-wrap label clicks propagate correctly
-    document.querySelector('.toggle-wrap').addEventListener('click', function (e) {
-      if (e.target.tagName === 'INPUT') return;
-      const cb = document.getElementById('inflationToggle');
-      cb.checked = !cb.checked;
-      cb.dispatchEvent(new Event('change'));
     });
 
     // ── Slider wiring ─────────────────────────────────────────────────────────
