@@ -4,340 +4,240 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CAGR Calculator — Wealth Builder</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.18);
-      outline: none;
-      cursor: pointer;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #D4AF37;
-      cursor: pointer;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 8px rgba(212,175,55,0.45);
-    }
-    input[type="range"]::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #D4AF37;
-      cursor: pointer;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 8px rgba(212,175,55,0.45);
-    }
-
-    .glass-card {
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 1rem;
-    }
-
-    .wb-divider {
-      border-color: rgba(255,255,255,0.12);
-      margin: 1.5rem 0;
-    }
-
-    .text-muted { color: rgba(255,255,255,0.7); }
-
-    .val-badge {
-      background: rgba(212,175,55,0.18);
-      color: #D4AF37;
-      border: 1.5px solid rgba(212,175,55,0.35);
-      border-radius: 9999px;
-      padding: 2px 14px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-
-    .bar-fill {
-      border-radius: 0 6px 6px 0;
-      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    table { border-collapse: collapse; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); background-attachment: fixed; color: #fff; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.2); outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; }
+    input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; border: 2px solid #0D1B4B; }
+    .card { background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 28px; }
+    .val-badge { display: inline-block; background: rgba(212,175,55,0.15); color: #D4AF37; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 4px 14px; font-size: 0.875rem; font-weight: 700; }
+    .result-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; text-align: center; }
+    .result-card .label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+    .result-card .value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .results-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .cagr-hero { background: linear-gradient(135deg, #B8860B, #D4AF37); border-radius: 16px; padding: 28px; text-align: center; margin-bottom: 16px; }
+    .cagr-value { font-size: 3rem; font-weight: 800; color: #1A237E; line-height: 1; }
+    .cagr-label { font-size: 1rem; color: rgba(26,35,126,0.7); margin-top: 6px; }
+    .bar-wrap { background: rgba(255,255,255,0.1); border-radius: 6px; height: 28px; overflow: hidden; position: relative; }
+    .bar-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; display: flex; align-items: center; padding-left: 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+    th { background: rgba(212,175,55,0.15); color: #D4AF37; padding: 10px 12px; text-align: left; font-size: 0.75rem; text-transform: uppercase; }
+    td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+    .section { padding: 32px 16px; max-width: 720px; margin: 0 auto; }
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0; }
+    @media (max-width: 640px) { .results-grid-3 { grid-template-columns: 1fr; } .cagr-value { font-size: 2rem; } }
   </style>
 </head>
-<body class="min-h-screen" style="background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); background-attachment: fixed;">
+<body>
 
   <!-- Navbar -->
-  <nav style="background: #0D1B4B; min-height: 64px; border-bottom: 1.5px solid rgba(212,175,55,0.25);" class="px-4 flex items-center shadow-lg">
-    <div class="max-w-3xl mx-auto w-full flex items-center justify-between">
-      <a href="../index.html" class="flex items-center gap-2 no-underline" style="text-decoration:none;">
+  <nav style="background: #0D1B4B; min-height: 64px; border-bottom: 1.5px solid rgba(212,175,55,0.25); display: flex; align-items: center; padding: 0 16px;">
+    <div style="max-width: 720px; margin: 0 auto; width: 100%; display: flex; align-items: center; justify-content: space-between;">
+      <a href="../index.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
         <i class="ph ph-coins" style="font-size: 1.6rem; color: #D4AF37;"></i>
         <div>
-          <div class="font-bold leading-tight" style="font-size: 1.05rem; color: #D4AF37; letter-spacing: 0.5px;">Wealth Builder</div>
+          <div style="font-weight: 700; font-size: 1.05rem; color: #D4AF37; letter-spacing: 0.5px; line-height: 1.2;">Wealth Builder</div>
           <div style="font-size: 0.7rem; color: rgba(255,255,255,0.55); letter-spacing: 0.3px;">CAGR Calculator</div>
         </div>
       </a>
-      <a href="../index.html" class="flex items-center gap-1 text-xs no-underline" style="color: rgba(255,255,255,0.6); text-decoration:none;">
+      <a href="../index.html" style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: rgba(255,255,255,0.6); text-decoration: none;">
         <i class="ph ph-arrow-left"></i> All Calculators
       </a>
     </div>
   </nav>
 
-  <!-- Page Hero -->
-  <section class="text-center pt-8 pb-5 px-4">
-    <div class="max-w-3xl mx-auto">
-      <div class="flex items-center justify-center gap-2 mb-2">
+  <!-- Hero -->
+  <section style="text-align: center; padding: 32px 16px 20px;">
+    <div style="max-width: 720px; margin: 0 auto;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
         <i class="ph ph-chart-bar" style="font-size: 1.8rem; color: #D4AF37;"></i>
-        <h1 class="font-bold" style="font-size: 1.6rem; color: #fff; letter-spacing: 0.2px;">CAGR Calculator</h1>
+        <h1 style="font-size: 1.6rem; font-weight: 700; color: #fff; letter-spacing: 0.2px;">CAGR Calculator</h1>
       </div>
-      <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Find the Compound Annual Growth Rate of any investment</p>
+      <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Calculate the Compound Annual Growth Rate of your investment and benchmark it.</p>
     </div>
   </section>
 
-  <!-- Main Content -->
-  <section class="pb-10 px-4">
-    <div class="max-w-3xl mx-auto">
+  <!-- Main -->
+  <section class="section">
 
-      <!-- Calculator Card -->
-      <div class="glass-card p-6 md:p-8">
+    <!-- Calculator Card -->
+    <div class="card">
 
-        <!-- Initial Investment -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">Initial Investment (Rs.)</label>
-            <span id="initialVal" class="val-badge">Rs. 1,00,000</span>
-          </div>
-          <input type="range" id="initialSlider" min="1000" max="10000000" step="1000" value="100000" class="w-full">
-          <div class="flex justify-between mt-1 text-xs text-muted">
-            <span>Rs. 1,000</span><span>Rs. 1,00,00,000</span>
-          </div>
+      <!-- Initial Investment -->
+      <div style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 0.875rem; font-weight: 600; color: #fff;">Initial Investment (Rs.)</label>
+          <span class="val-badge" id="initialVal">Rs. 1,00,000</span>
         </div>
-
-        <!-- Final Value -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">Final Value (Rs.)</label>
-            <span id="finalVal" class="val-badge">Rs. 3,00,000</span>
-          </div>
-          <input type="range" id="finalSlider" min="1000" max="50000000" step="10000" value="300000" class="w-full">
-          <div class="flex justify-between mt-1 text-xs text-muted">
-            <span>Rs. 1,000</span><span>Rs. 5,00,00,000</span>
-          </div>
+        <input type="range" id="initial" min="1000" max="10000000" step="1000" value="100000">
+        <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.7rem; color: rgba(255,255,255,0.5);">
+          <span>Rs. 1,000</span><span>Rs. 1,00,00,000</span>
         </div>
-
-        <!-- Time Period -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-semibold text-white">Time Period (Years)</label>
-            <span id="yearsVal" class="val-badge">5 Yrs</span>
-          </div>
-          <input type="range" id="yearsSlider" min="1" max="30" step="1" value="5" class="w-full">
-          <div class="flex justify-between mt-1 text-xs text-muted">
-            <span>1 Yr</span><span>30 Yrs</span>
-          </div>
-        </div>
-
-        <hr class="wb-divider" />
-
-        <!-- CAGR Hero Result -->
-        <div class="rounded-2xl p-6 text-center mb-4" style="background: linear-gradient(135deg, #B8860B 0%, #D4AF37 100%); box-shadow: 0 6px 32px rgba(212,175,55,0.35);">
-          <div class="text-sm font-semibold mb-1" style="color: rgba(0,0,0,0.6); letter-spacing: 0.5px; text-transform: uppercase;">CAGR</div>
-          <div class="font-extrabold" id="cagrResult" style="font-size: 2.6rem; color: #0D1B4B; line-height: 1.1; letter-spacing: -0.5px;">—</div>
-          <div class="mt-1 text-sm font-medium" style="color: rgba(0,0,0,0.5);">per year</div>
-        </div>
-
-        <!-- Secondary Result Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <div class="glass-card p-4 text-center">
-            <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-              <i class="ph ph-percent"></i> Total Return
-            </div>
-            <div class="font-bold text-lg" id="totalReturnResult" style="color: #D4AF37;">—</div>
-          </div>
-          <div class="glass-card p-4 text-center">
-            <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-              <i class="ph ph-currency-inr"></i> Absolute Gains
-            </div>
-            <div class="font-bold text-lg text-white" id="absoluteGainsResult">—</div>
-          </div>
-          <div class="glass-card p-4 text-center">
-            <div class="text-xs mb-1 text-muted flex items-center justify-center gap-1">
-              <i class="ph ph-arrows-out"></i> Growth Multiple
-            </div>
-            <div class="font-bold text-lg text-white" id="growthMultipleResult">—</div>
-          </div>
-        </div>
-
-        <hr class="wb-divider" />
-
-        <!-- Bar Chart Comparison -->
-        <div>
-          <h6 class="font-bold mb-4 flex items-center gap-2" style="color: #D4AF37;">
-            <i class="ph ph-chart-bar-horizontal"></i> Investment vs Final Value
-          </h6>
-          <div class="space-y-4">
-            <!-- Initial Investment Bar -->
-            <div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="font-semibold text-white">Initial Investment</span>
-                <span class="text-muted" id="barInitialLabel">—</span>
-              </div>
-              <div class="w-full rounded-full" style="background: rgba(255,255,255,0.1); height: 14px;">
-                <div id="barInitial" class="bar-fill h-full" style="background: #3949AB; width: 0%;"></div>
-              </div>
-            </div>
-            <!-- Final Value Bar -->
-            <div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="font-semibold text-white">Final Value</span>
-                <span class="text-muted" id="barFinalLabel">—</span>
-              </div>
-              <div class="w-full rounded-full" style="background: rgba(255,255,255,0.1); height: 14px;">
-                <div id="barFinal" class="bar-fill h-full" style="background: #D4AF37; width: 0%;"></div>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-5 mt-3">
-            <div class="flex items-center gap-1.5">
-              <span class="inline-block rounded-full" style="width: 12px; height: 12px; background: #3949AB;"></span>
-              <span class="text-xs text-muted">Initial Investment</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span class="inline-block rounded-full" style="width: 12px; height: 12px; background: #D4AF37;"></span>
-              <span class="text-xs text-muted">Final Value</span>
-            </div>
-          </div>
-        </div>
-
-        <hr class="wb-divider" />
-
-        <!-- Benchmark Comparison Table -->
-        <div>
-          <h6 class="font-bold mb-1 flex items-center gap-2" style="color: #D4AF37;">
-            <i class="ph ph-scales"></i> Benchmark Comparison
-          </h6>
-          <p class="text-xs mb-4 text-muted">How does your CAGR stack up against common investment benchmarks?</p>
-          <div class="overflow-x-auto rounded-xl">
-            <table class="w-full text-sm" style="border: 1px solid rgba(255,255,255,0.12); overflow: hidden;">
-              <thead>
-                <tr style="background: rgba(212,175,55,0.12);">
-                  <th class="text-left p-3 text-xs uppercase tracking-wide font-semibold" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">Benchmark</th>
-                  <th class="text-center p-3 text-xs uppercase tracking-wide font-semibold" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">Typical CAGR</th>
-                  <th class="text-center p-3 text-xs uppercase tracking-wide font-semibold" style="color: #D4AF37; border-bottom: 1px solid rgba(255,255,255,0.1);">vs Yours</th>
-                </tr>
-              </thead>
-              <tbody id="benchmarkTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <p class="text-center mt-6 text-xs text-muted">
-          * CAGR is for illustration purposes only. Actual investment returns vary and are subject to market risks.
-        </p>
       </div>
 
-      <!-- Back Link -->
-      <div class="text-center mt-6">
-        <a href="../index.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2 rounded-lg no-underline transition-opacity hover:opacity-80" style="color: #D4AF37; border: 1.5px solid rgba(212,175,55,0.5); text-decoration:none;">
-          <i class="ph ph-arrow-left"></i> Back to All Calculators
-        </a>
+      <!-- Final Value -->
+      <div style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 0.875rem; font-weight: 600; color: #fff;">Final Value (Rs.)</label>
+          <span class="val-badge" id="finalVal">Rs. 3,00,000</span>
+        </div>
+        <input type="range" id="final" min="1000" max="50000000" step="10000" value="300000">
+        <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.7rem; color: rgba(255,255,255,0.5);">
+          <span>Rs. 1,000</span><span>Rs. 5,00,00,000</span>
+        </div>
       </div>
+
+      <!-- Time Period -->
+      <div style="margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 0.875rem; font-weight: 600; color: #fff;">Time Period (Years)</label>
+          <span class="val-badge" id="yearsVal">5 Yrs</span>
+        </div>
+        <input type="range" id="years" min="1" max="30" step="1" value="5">
+        <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.7rem; color: rgba(255,255,255,0.5);">
+          <span>1 Yr</span><span>30 Yrs</span>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- CAGR Hero -->
+      <div class="cagr-hero">
+        <div class="cagr-value" id="cagrValue">—</div>
+        <div class="cagr-label">Compound Annual Growth Rate</div>
+      </div>
+
+      <!-- Secondary Metrics -->
+      <div class="results-grid-3">
+        <div class="result-card">
+          <div class="label">Total Return</div>
+          <div class="value" id="totalReturn" style="color:#34D399;">—</div>
+        </div>
+        <div class="result-card">
+          <div class="label">Absolute Gains</div>
+          <div class="value" id="absoluteGains" style="color:#34D399;">—</div>
+        </div>
+        <div class="result-card">
+          <div class="label">Growth Multiple</div>
+          <div class="value" id="growthMultiple" style="color:#D4AF37;">—</div>
+        </div>
+      </div>
+
+      <!-- Bar Chart -->
+      <div style="margin-top:20px;background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;">
+        <h6 style="color:rgba(255,255,255,0.7);font-size:0.8rem;margin-bottom:12px;">Investment vs Final Value</h6>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Initial Investment</span>
+            <span id="barInitialLabel" style="font-size:0.75rem;color:rgba(255,255,255,0.7);">—</span>
+          </div>
+          <div class="bar-wrap">
+            <div id="barInitial" class="bar-fill" style="width:40%;background:rgba(59,130,246,0.6);color:#fff;">Initial</div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Final Value</span>
+            <span id="barFinalLabel" style="font-size:0.75rem;color:#D4AF37;">—</span>
+          </div>
+          <div class="bar-wrap">
+            <div id="barFinal" class="bar-fill" style="width:100%;background:linear-gradient(90deg,#B8860B,#D4AF37);color:#1A237E;">Final</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Benchmark Table -->
+      <div style="margin-top:20px;">
+        <h6 style="color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:12px;">How does your CAGR compare?</h6>
+        <div style="border-radius:12px;border:1px solid rgba(255,255,255,0.1);overflow:hidden;">
+          <table>
+            <thead><tr>
+              <th>Benchmark</th>
+              <th>Typical CAGR</th>
+              <th>Your CAGR</th>
+              <th>Result</th>
+            </tr></thead>
+            <tbody id="benchmarkTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p style="text-align:center;margin-top:24px;font-size:0.75rem;color:rgba(255,255,255,0.4);">
+        * CAGR is for illustration purposes only. Actual investment returns vary and are subject to market risks.
+      </p>
+    </div>
+
+    <!-- Back Link -->
+    <div style="text-align:center;margin-top:24px;">
+      <a href="../index.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:600;padding:8px 20px;border-radius:8px;color:#D4AF37;border:1.5px solid rgba(212,175,55,0.5);text-decoration:none;">
+        <i class="ph ph-arrow-left"></i> Back to All Calculators
+      </a>
     </div>
   </section>
 
-  <footer class="text-center py-5 text-sm mt-4" style="border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);">
+  <footer style="text-align:center;padding:20px 16px;border-top:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:0.8rem;margin-top:16px;">
     <small>© 2026 Mutual Fund Calculator — Licensed under MIT License. Free to reuse with attribution.</small>
   </footer>
 
   <script src="../assets/js/app.js"></script>
   <script>
-    const initialSlider = document.getElementById("initialSlider");
-    const finalSlider   = document.getElementById("finalSlider");
-    const yearsSlider   = document.getElementById("yearsSlider");
+    const initialSlider = document.getElementById('initial');
+    const finalSlider = document.getElementById('final');
+    const yearsSlider = document.getElementById('years');
 
-    const benchmarks = [
-      { icon: "🏦", label: "Fixed Deposit",          low: 6,  high: 7  },
-      { icon: "🥇", label: "Gold",                   low: 10, high: 11 },
-      { icon: "📈", label: "Nifty 50 (historical)",  low: 12, high: 14 },
-      { icon: "💎", label: "Quality Mutual Fund",    low: 14, high: 18 },
-    ];
+    function calculate() {
+      const P = Number(initialSlider.value);
+      const FV = Number(finalSlider.value);
+      const years = Number(yearsSlider.value);
 
-    function renderBenchmarks(cagr) {
-      const tbody = document.getElementById("benchmarkTableBody");
-      tbody.innerHTML = "";
-      benchmarks.forEach(function(b) {
-        const midpoint = (b.low + b.high) / 2;
-        const diff = cagr - midpoint;
-        let badgeColor, badgeText, rowBg;
-        if (cagr > b.high) {
-          badgeColor = "#4ADE80"; rowBg = "rgba(74,222,128,0.04)"; badgeText = "▲ Above";
-        } else if (cagr >= b.low - 1) {
-          badgeColor = "#FBBF24"; rowBg = "rgba(251,191,36,0.04)"; badgeText = "≈ Close";
-        } else {
-          badgeColor = "rgba(255,255,255,0.4)"; rowBg = "transparent"; badgeText = "▼ Below";
-        }
-        const tr = document.createElement("tr");
-        tr.style.cssText = "border-bottom: 1px solid rgba(255,255,255,0.08); background: " + rowBg + ";";
-        tr.innerHTML =
-          '<td class="p-3 text-sm" style="color: rgba(255,255,255,0.85);">' +
-            '<span style="font-size:1.1rem; margin-right:6px;">' + b.icon + '</span>' + b.label +
-          '</td>' +
-          '<td class="p-3 text-center text-xs font-semibold" style="color: rgba(255,255,255,0.7);">' +
-            b.low + '% – ' + b.high + '%' +
-          '</td>' +
-          '<td class="p-3 text-center">' +
-            '<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="color:' + badgeColor + '; background: ' + badgeColor + '18; border:1px solid ' + badgeColor + '55;">' +
-              badgeText +
-            '</span>' +
-          '</td>';
+      document.getElementById('initialVal').textContent = formatINR(P);
+      document.getElementById('finalVal').textContent = formatINR(FV);
+      document.getElementById('yearsVal').textContent = years + ' Yrs';
+
+      const cagr = calculateCAGR(P, FV, years);
+      const totalReturnPct = ((FV - P) / P * 100);
+
+      document.getElementById('cagrValue').textContent = cagr.toFixed(2) + '% p.a.';
+      document.getElementById('totalReturn').textContent = totalReturnPct.toFixed(2) + '%';
+      document.getElementById('absoluteGains').textContent = formatINR(FV - P);
+      document.getElementById('growthMultiple').textContent = (FV / P).toFixed(2) + 'x';
+
+      // Bar chart
+      const maxVal = FV;
+      document.getElementById('barInitial').style.width = Math.max(5, (P / maxVal) * 100) + '%';
+      document.getElementById('barFinal').style.width = '100%';
+      document.getElementById('barInitialLabel').textContent = formatINR(P);
+      document.getElementById('barFinalLabel').textContent = formatINR(FV);
+
+      // Benchmark table
+      const benchmarks = [
+        { name: '🏦 Fixed Deposit', min: 6, max: 7 },
+        { name: '🥇 Gold', min: 10, max: 11 },
+        { name: '📈 Nifty 50', min: 12, max: 14 },
+        { name: '💎 Quality MF', min: 14, max: 18 }
+      ];
+      const tbody = document.getElementById('benchmarkTable');
+      tbody.innerHTML = '';
+      benchmarks.forEach(b => {
+        const avgBench = (b.min + b.max) / 2;
+        let result, color;
+        if (cagr > b.max) { result = '✓ Above'; color = '#22C55E'; }
+        else if (cagr >= b.min) { result = '~ Equal'; color = '#EAB308'; }
+        else { result = '✗ Below'; color = '#EF4444'; }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${b.name}</td><td style="color:rgba(255,255,255,0.6);">${b.min}–${b.max}%</td><td style="color:#D4AF37;font-weight:700;">${cagr.toFixed(2)}%</td><td style="color:${color};font-weight:600;">${result}</td>`;
         tbody.appendChild(tr);
       });
     }
 
-    function updateBars(initial, final) {
-      const max = Math.max(initial, final);
-      const pctInitial = (initial / max * 100).toFixed(1);
-      const pctFinal   = (final   / max * 100).toFixed(1);
-      document.getElementById("barInitial").style.width = pctInitial + "%";
-      document.getElementById("barFinal").style.width   = pctFinal   + "%";
-      document.getElementById("barInitialLabel").textContent = formatINR(initial);
-      document.getElementById("barFinalLabel").textContent   = formatINR(final);
-    }
-
-    function calculate() {
-      const initial = Number(initialSlider.value);
-      const final   = Number(finalSlider.value);
-      const years   = Number(yearsSlider.value);
-
-      document.getElementById("initialVal").textContent = formatINR(initial);
-      document.getElementById("finalVal").textContent   = formatINR(final);
-      document.getElementById("yearsVal").textContent   = years + " Yrs";
-
-      const cagr         = calculateCAGR(initial, final, years);
-      const totalReturn  = (final - initial) / initial * 100;
-      const absGains     = final - initial;
-      const growthMult   = (final / initial).toFixed(2);
-
-      document.getElementById("cagrResult").textContent        = cagr.toFixed(2) + "%";
-      document.getElementById("totalReturnResult").textContent  = totalReturn.toFixed(2) + "%";
-      document.getElementById("absoluteGainsResult").textContent = formatINR(absGains);
-      document.getElementById("growthMultipleResult").textContent = growthMult + "x";
-
-      updateBars(initial, final);
-      renderBenchmarks(cagr);
-    }
-
-    initialSlider.addEventListener("input", calculate);
-    finalSlider.addEventListener("input", calculate);
-    yearsSlider.addEventListener("input", calculate);
-
+    initialSlider.addEventListener('input', calculate);
+    finalSlider.addEventListener('input', calculate);
+    yearsSlider.addEventListener('input', calculate);
     calculate();
   </script>
 </body>
