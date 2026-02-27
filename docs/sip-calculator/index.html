@@ -24,9 +24,10 @@
   </section>
 
   <section class="py-5">
-    <div class="container" style="max-width: 780px;">
+    <div class="container" style="max-width: 860px;">
       <div class="card shadow-sm border-0 p-4">
 
+        <!-- Monthly Investment -->
         <div class="mb-4">
           <div class="d-flex justify-content-between">
             <label class="form-label fw-semibold">Monthly Investment (Rs.)</label>
@@ -36,6 +37,7 @@
           <div class="d-flex justify-content-between text-muted small"><span>Rs. 500</span><span>Rs. 1,00,000</span></div>
         </div>
 
+        <!-- Expected Return -->
         <div class="mb-4">
           <div class="d-flex justify-content-between">
             <label class="form-label fw-semibold">Expected Annual Return (%)</label>
@@ -45,6 +47,7 @@
           <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>30%</span></div>
         </div>
 
+        <!-- Time Period -->
         <div class="mb-4">
           <div class="d-flex justify-content-between">
             <label class="form-label fw-semibold">Time Period (Years)</label>
@@ -54,8 +57,30 @@
           <div class="d-flex justify-content-between text-muted small"><span>1 Yr</span><span>40 Yrs</span></div>
         </div>
 
+        <!-- Top-Up Toggle -->
+        <div class="mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="topupToggle" role="switch">
+            <label class="form-check-label fw-semibold" for="topupToggle">
+              📈 Enable Annual Top-Up SIP
+            </label>
+          </div>
+          <div class="text-muted small mt-1">Automatically increase your SIP amount every year by a fixed percentage.</div>
+        </div>
+
+        <!-- Top-Up Rate Slider (hidden by default) -->
+        <div class="mb-4" id="topupSection" style="display:none;">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-semibold">Annual Top-Up Rate (%)</label>
+            <span class="badge bg-success fs-6" id="topupVal">10%</span>
+          </div>
+          <input type="range" class="form-range topup-range" id="topup" min="1" max="50" step="1" value="10">
+          <div class="d-flex justify-content-between text-muted small"><span>1%</span><span>50%</span></div>
+        </div>
+
         <hr />
 
+        <!-- Result Summary Cards -->
         <div class="row text-center g-3 mt-1">
           <div class="col-md-4">
             <div class="result-card p-3 rounded bg-light border">
@@ -83,6 +108,33 @@
 
       </div>
 
+      <!-- Top-Up Yearly Breakdown Table -->
+      <div id="topupTableSection" style="display:none;" class="mt-4">
+        <div class="card shadow-sm border-0 p-4">
+          <h6 class="fw-bold text-primary mb-3">📊 Year-by-Year Top-Up SIP Breakdown</h6>
+          <p class="text-muted small mb-3">
+            The table below shows how your monthly SIP amount increases each year due to the top-up, along with the
+            yearly invested amount and the corpus (portfolio value) built up at the end of each year.
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover align-middle topup-table mb-0">
+              <thead class="table-primary">
+                <tr>
+                  <th class="text-center">Year</th>
+                  <th class="text-end">Monthly SIP (Rs.)</th>
+                  <th class="text-end">Yearly Invested (Rs.)</th>
+                  <th class="text-end">Corpus at Year End (Rs.)</th>
+                </tr>
+              </thead>
+              <tbody id="topupTableBody">
+              </tbody>
+              <tfoot id="topupTableFoot">
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div class="text-center mt-4">
         <a href="../index.html" class="btn btn-outline-primary">Back to All Calculators</a>
       </div>
@@ -97,23 +149,78 @@
   <script src="../assets/js/app.js"></script>
   <script>
     const principalSlider = document.getElementById("principal");
-    const rateSlider = document.getElementById("rate");
-    const yearsSlider = document.getElementById("years");
+    const rateSlider      = document.getElementById("rate");
+    const yearsSlider     = document.getElementById("years");
+    const topupToggle     = document.getElementById("topupToggle");
+    const topupSlider     = document.getElementById("topup");
+    const topupSection    = document.getElementById("topupSection");
+    const topupTableSection = document.getElementById("topupTableSection");
+
+    // Show / hide the top-up controls
+    topupToggle.addEventListener("change", function () {
+      topupSection.style.display      = this.checked ? "block" : "none";
+      topupTableSection.style.display = this.checked ? "block" : "none";
+      calculate();
+    });
+
+    topupSlider.addEventListener("input", function () {
+      document.getElementById("topupVal").textContent = formatPercent(this.value);
+      calculate();
+    });
 
     function calculate() {
-      const P = Number(principalSlider.value);
+      const P          = Number(principalSlider.value);
       const annualRate = Number(rateSlider.value);
-      const years = Number(yearsSlider.value);
+      const years      = Number(yearsSlider.value);
 
       document.getElementById("principalVal").textContent = formatINR(P);
-      document.getElementById("rateVal").textContent = formatPercent(annualRate);
-      document.getElementById("yearsVal").textContent = yearsSlider.value + " Yrs";
+      document.getElementById("rateVal").textContent      = formatPercent(annualRate);
+      document.getElementById("yearsVal").textContent     = years + " Yrs";
 
-      const { futureValue, totalInvested, estimatedReturns } = calculateSIP(P, annualRate, years);
+      if (topupToggle.checked) {
+        const topUpRate = Number(topupSlider.value);
+        const { futureValue, totalInvested, estimatedReturns, yearlyBreakdown } =
+          calculateTopUpSIP(P, annualRate, years, topUpRate);
 
-      document.getElementById("invested").textContent = formatINR(totalInvested);
-      document.getElementById("returns").textContent = formatINR(estimatedReturns);
-      document.getElementById("total").textContent = formatINR(futureValue);
+        document.getElementById("invested").textContent = formatINR(totalInvested);
+        document.getElementById("returns").textContent  = formatINR(estimatedReturns);
+        document.getElementById("total").textContent    = formatINR(futureValue);
+
+        renderTopUpTable(yearlyBreakdown, totalInvested, futureValue);
+      } else {
+        const { futureValue, totalInvested, estimatedReturns } = calculateSIP(P, annualRate, years);
+
+        document.getElementById("invested").textContent = formatINR(totalInvested);
+        document.getElementById("returns").textContent  = formatINR(estimatedReturns);
+        document.getElementById("total").textContent    = formatINR(futureValue);
+      }
+    }
+
+    function renderTopUpTable(breakdown, totalInvested, totalCorpus) {
+      const tbody = document.getElementById("topupTableBody");
+      const tfoot = document.getElementById("topupTableFoot");
+      tbody.innerHTML = "";
+      tfoot.innerHTML = "";
+
+      breakdown.forEach(function (row) {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="text-center fw-semibold">Year ' + row.year + '</td>' +
+          '<td class="text-end">' + Math.round(row.monthlySIP).toLocaleString("en-IN") + '</td>' +
+          '<td class="text-end">' + Math.round(row.yearlyInvested).toLocaleString("en-IN") + '</td>' +
+          '<td class="text-end text-primary fw-semibold">' + Math.round(row.corpusAtEndOfYear).toLocaleString("en-IN") + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      // Footer totals row
+      const tfr = document.createElement("tr");
+      tfr.classList.add("table-success", "fw-bold");
+      tfr.innerHTML =
+        '<td class="text-center">Total</td>' +
+        '<td class="text-end">—</td>' +
+        '<td class="text-end">' + Math.round(totalInvested).toLocaleString("en-IN") + '</td>' +
+        '<td class="text-end text-success">' + Math.round(totalCorpus).toLocaleString("en-IN") + '</td>';
+      tfoot.appendChild(tfr);
     }
 
     principalSlider.addEventListener("input", calculate);
