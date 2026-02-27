@@ -6,8 +6,10 @@
   --color-primary-dark: #3730A3;
   --color-primary-light: #EEF2FF;
   --color-success: #059669;
+  --color-success-dark: #065f46;
   --color-success-light: #D1FAE5;
   --color-warning: #D97706;
+  --color-warning-dark: #92400e;
   --color-warning-light: #FEF3C7;
   --color-danger: #DC2626;
   --color-danger-light: #FEE2E2;
@@ -55,8 +57,16 @@ body {
   color: var(--color-success) !important;
 }
 
+.text-success-dark {
+  color: var(--color-success-dark) !important;
+}
+
 .text-warning {
   color: var(--color-warning) !important;
+}
+
+.text-warning-dark {
+  color: var(--color-warning-dark) !important;
 }
 
 .text-danger {
