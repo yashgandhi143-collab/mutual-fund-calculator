@@ -80,25 +80,90 @@
 
         <hr />
 
-        <!-- Result Summary Cards -->
-        <div class="row text-center g-3 mt-1">
-          <div class="col-md-4">
-            <div class="result-card p-3 rounded bg-light border">
-              <div class="text-muted small mb-1">Invested Amount</div>
-              <div class="fw-bold fs-5 text-dark" id="invested">—</div>
+        <!-- Result Summary Cards (shown when top-up is OFF) -->
+        <div id="regularResultSection">
+          <div class="row text-center g-3 mt-1">
+            <div class="col-md-4">
+              <div class="result-card p-3 rounded bg-light border">
+                <div class="text-muted small mb-1">Invested Amount</div>
+                <div class="fw-bold fs-5 text-dark" id="invested">—</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="result-card p-3 rounded bg-light border">
+                <div class="text-muted small mb-1">Estimated Returns</div>
+                <div class="fw-bold fs-5 text-success" id="returns">—</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="result-card p-3 rounded bg-primary border">
+                <div class="text-white small mb-1">Total Value</div>
+                <div class="fw-bold fs-5 text-white" id="total">—</div>
+              </div>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="result-card p-3 rounded bg-light border">
-              <div class="text-muted small mb-1">Estimated Returns</div>
-              <div class="fw-bold fs-5 text-success" id="returns">—</div>
+        </div>
+
+        <!-- Comparison Result Cards (shown when top-up is ON) -->
+        <div id="comparisonResultSection" style="display:none;">
+          <div class="row g-3 mt-1">
+
+            <!-- Without Top-Up -->
+            <div class="col-md-6">
+              <h6 class="text-muted fw-semibold text-center mb-2">📊 Without Top-Up</h6>
+              <div class="row text-center g-2">
+                <div class="col-12">
+                  <div class="result-card p-3 rounded bg-light border">
+                    <div class="text-muted small mb-1">Invested Amount</div>
+                    <div class="fw-bold fs-6 text-dark" id="noTopupInvested">—</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="result-card p-3 rounded bg-light border">
+                    <div class="text-muted small mb-1">Estimated Returns</div>
+                    <div class="fw-bold fs-6 text-success" id="noTopupReturns">—</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="result-card p-3 rounded bg-primary border">
+                    <div class="text-white small mb-1">Total Value</div>
+                    <div class="fw-bold fs-6 text-white" id="noTopupTotal">—</div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- With Top-Up -->
+            <div class="col-md-6">
+              <h6 class="text-success fw-semibold text-center mb-2">📈 With Top-Up</h6>
+              <div class="row text-center g-2">
+                <div class="col-12">
+                  <div class="result-card p-3 rounded bg-light border">
+                    <div class="text-muted small mb-1">Invested Amount</div>
+                    <div class="fw-bold fs-6 text-dark" id="topupInvested">—</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="result-card p-3 rounded bg-light border">
+                    <div class="text-muted small mb-1">Estimated Returns</div>
+                    <div class="fw-bold fs-6 text-success" id="topupReturns">—</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="result-card p-3 rounded bg-success border">
+                    <div class="text-white small mb-1">Total Value</div>
+                    <div class="fw-bold fs-6 text-white" id="topupTotal">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div class="col-md-4">
-            <div class="result-card p-3 rounded bg-primary border">
-              <div class="text-white small mb-1">Total Value</div>
-              <div class="fw-bold fs-5 text-white" id="total">—</div>
-            </div>
+
+          <!-- Additional gain callout -->
+          <div class="mt-3 p-3 rounded border border-success bg-success bg-opacity-10 text-center">
+            <span class="text-muted small">🚀 Additional Value from Top-Up: </span>
+            <span class="fw-bold text-success fs-6" id="additionalGain">—</span>
           </div>
         </div>
 
@@ -155,6 +220,8 @@
     const topupSlider     = document.getElementById("topup");
     const topupSection    = document.getElementById("topupSection");
     const topupTableSection = document.getElementById("topupTableSection");
+    const regularResultSection    = document.getElementById("regularResultSection");
+    const comparisonResultSection = document.getElementById("comparisonResultSection");
 
     // Show / hide the top-up controls
     topupToggle.addEventListener("change", function () {
@@ -179,15 +246,33 @@
 
       if (topupToggle.checked) {
         const topUpRate = Number(topupSlider.value);
-        const { futureValue, totalInvested, estimatedReturns, yearlyBreakdown } =
-          calculateTopUpSIP(P, annualRate, years, topUpRate);
+        const topUpResult = calculateTopUpSIP(P, annualRate, years, topUpRate);
+        const regularResult = calculateSIP(P, annualRate, years);
 
-        document.getElementById("invested").textContent = formatINR(totalInvested);
-        document.getElementById("returns").textContent  = formatINR(estimatedReturns);
-        document.getElementById("total").textContent    = formatINR(futureValue);
+        // Show comparison view, hide single view
+        regularResultSection.style.display    = "none";
+        comparisonResultSection.style.display = "block";
 
-        renderTopUpTable(yearlyBreakdown, totalInvested, futureValue);
+        // Without top-up
+        document.getElementById("noTopupInvested").textContent = formatINR(regularResult.totalInvested);
+        document.getElementById("noTopupReturns").textContent  = formatINR(regularResult.estimatedReturns);
+        document.getElementById("noTopupTotal").textContent    = formatINR(regularResult.futureValue);
+
+        // With top-up
+        document.getElementById("topupInvested").textContent = formatINR(topUpResult.totalInvested);
+        document.getElementById("topupReturns").textContent  = formatINR(topUpResult.estimatedReturns);
+        document.getElementById("topupTotal").textContent    = formatINR(topUpResult.futureValue);
+
+        // Additional gain
+        const additionalGain = topUpResult.futureValue - regularResult.futureValue;
+        document.getElementById("additionalGain").textContent = formatINR(additionalGain);
+
+        renderTopUpTable(topUpResult.yearlyBreakdown, topUpResult.totalInvested, topUpResult.futureValue);
       } else {
+        // Show single view, hide comparison view
+        regularResultSection.style.display    = "block";
+        comparisonResultSection.style.display = "none";
+
         const { futureValue, totalInvested, estimatedReturns } = calculateSIP(P, annualRate, years);
 
         document.getElementById("invested").textContent = formatINR(totalInvested);
