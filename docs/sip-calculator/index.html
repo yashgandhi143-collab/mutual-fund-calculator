@@ -90,7 +90,7 @@
   </section>
 
   <footer class="text-center py-4 text-muted border-top bg-white mt-4">
-    <small>2026 Mutual Fund Calculator — Licensed under MIT License. Free to reuse with attribution.</small>
+    <small>© 2026 Mutual Fund Calculator — Licensed under MIT License. Free to reuse with attribution.</small>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -100,22 +100,16 @@
     const rateSlider = document.getElementById("rate");
     const yearsSlider = document.getElementById("years");
 
-    function formatINR(x) {
-      return "Rs. " + Math.round(x).toLocaleString("en-IN");
-    }
-
     function calculate() {
       const P = Number(principalSlider.value);
-      const r = Number(rateSlider.value) / 100 / 12;
-      const n = Number(yearsSlider.value) * 12;
+      const annualRate = Number(rateSlider.value);
+      const years = Number(yearsSlider.value);
 
-      document.getElementById("principalVal").textContent = "Rs. " + P.toLocaleString("en-IN");
-      document.getElementById("rateVal").textContent = rateSlider.value + "%";
+      document.getElementById("principalVal").textContent = formatINR(P);
+      document.getElementById("rateVal").textContent = formatPercent(annualRate);
       document.getElementById("yearsVal").textContent = yearsSlider.value + " Yrs";
 
-      const futureValue = P * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-      const totalInvested = P * n;
-      const estimatedReturns = futureValue - totalInvested;
+      const { futureValue, totalInvested, estimatedReturns } = calculateSIP(P, annualRate, years);
 
       document.getElementById("invested").textContent = formatINR(totalInvested);
       document.getElementById("returns").textContent = formatINR(estimatedReturns);
