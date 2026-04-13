@@ -17,12 +17,14 @@ Used to find the ticker symbol for a given ISIN.
 - **Method**: GET
 - **Response**: A JSON object containing a `quotes` array. The first quote's `symbol` is used.
 
-### 2. Yahoo Finance Chart API
+### 2. Financial Modeling Prep Profile API
 Used to get the real-time market price for a ticker symbol.
 
-- **URL**: `https://query1.finance.yahoo.com/v8/finance/chart/{TICKER}?interval=1m&range=1d`
+- **URL**: `https://financialmodelingprep.com/stable/profile?symbol={TICKER}&apikey={API_KEY}`
 - **Method**: GET
-- **Response**: A JSON object containing `chart.result[0].meta.regularMarketPrice`.
+- **Response**: A JSON array containing an object with a `price` property. We use `data[0].price`.
+
+**Note**: The API Key is provided by the user via the input field in the tool's interface.
 
 ## CORS Proxy
 
@@ -42,6 +44,6 @@ To avoid being blocked by Yahoo Finance or the proxy, the following measures are
 
 The tool provides simplified error messages in the "Status / Error" column:
 - **"Symbol not found for this ISIN"**: The Search API couldn't find a matching ticker.
-- **"Price data not available"**: The Chart API returned no price data for the ticker.
+- **"Price data not available"**: The Profile API returned no price data for the ticker.
 - **"API returned 429"**: Too many requests (Rate Limited).
 - **"Network Error"**: Connection issues.
