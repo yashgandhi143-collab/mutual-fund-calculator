@@ -9,8 +9,7 @@ const progressBar = document.getElementById('progressBar');
 const summaryDiv = document.getElementById('summary');
 const resultsTableContainer = document.getElementById('resultsTableContainer');
 
-const NSE_CSV_URL = 'https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv';
-const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+const NSE_CSV_URL = '../assets/EQUITY_L.csv';
 const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
 
 let testResults = [];
@@ -20,9 +19,9 @@ let errorCount = 0;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function fetchNSEData() {
-    statusDiv.innerText = 'Fetching EQUITY_L.csv from NSE...';
+    statusDiv.innerText = 'Loading EQUITY_L.csv...';
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(NSE_CSV_URL)}`);
+        const response = await fetch(NSE_CSV_URL);
         if (!response.ok) throw new Error('Failed to fetch NSE CSV');
         const text = await response.text();
         return parseCSV(text);
