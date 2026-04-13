@@ -17,6 +17,7 @@ let isinToSymbolMap = null;
 const PROXY_URL = 'https://api.allorigins.win/raw?url=';
 const NSE_CSV_URL = 'https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv';
 const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
+const FMP_ISIN_URL = 'https://financialmodelingprep.com/stable/search-isin?isin=';
 
 /**
  * Check if current time is within Indian Market Hours (9:15 AM - 3:30 PM IST)
@@ -35,7 +36,7 @@ function isMarketOpen() {
 
     const currentTimeInMinutes = hours * 60 + minutes;
     const marketOpenTimeInMinutes = 9 * 60 + 15;
-    const marketCloseTimeInMinutes = 15 * 60 + 30;
+    const marketCloseTimeInMinutes = 14 * 60; // 2:00 PM IST
 
     return currentTimeInMinutes >= marketOpenTimeInMinutes && currentTimeInMinutes <= marketCloseTimeInMinutes;
 }
@@ -80,14 +81,32 @@ async function fetchISINMapping() {
 }
 
 /**
- * Get Ticker from ISIN using NSE Mapping
+ * Get Ticker from ISIN using FMP Search and NSE Mapping fallback
  */
 async function getTicker(isin) {
+    const apiKey = apiKeyInput.value.trim();
+
+    // Try FMP ISIN Search first (supports global stocks)
+    if (apiKey) {
+        try {
+            const fmpResponse = await fetch(`${FMP_ISIN_URL}${isin}&apikey=${apiKey}`);
+            if (fmpResponse.ok) {
+                const data = await fmpResponse.json();
+                if (data && data.length > 0 && data[0].symbol) {
+                    return data[0].symbol;
+                }
+            }
+        } catch (error) {
+            console.warn(`FMP ISIN search failed for ${isin}, falling back to NSE list:`, error);
+        }
+    }
+
+    // Fallback to NSE ISIN mapping
     const mapping = await fetchISINMapping();
     if (mapping[isin]) {
         return mapping[isin];
     }
-    throw new Error(`Symbol not found for ISIN ${isin} in NSE list`);
+    throw new Error(`Symbol not found for ISIN ${isin}`);
 }
 
 /**
@@ -98,7 +117,7 @@ async function fetchPrice(ticker) {
     if (!apiKey) throw new Error('FMP API Key is required');
 
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`)}`);
+        const response = await fetch(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`);
         if (!response.ok) throw new Error(`Price API returned ${response.status}`);
         const data = await response.json();
         if (data && data.length > 0 && data[0].price !== undefined) {
