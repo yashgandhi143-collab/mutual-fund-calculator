@@ -14,8 +14,7 @@ let lastFetchedSheetName = '';
 let isinToSymbolMap = null;
 
 // Proxy and API configuration
-const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-const NSE_CSV_URL = 'https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv';
+const NSE_CSV_URL = '../assets/EQUITY_L.csv';
 const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
 const FMP_ISIN_URL = 'https://financialmodelingprep.com/stable/search-isin?isin=';
 
@@ -53,7 +52,7 @@ async function fetchISINMapping() {
     if (isinToSymbolMap) return isinToSymbolMap;
 
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(NSE_CSV_URL)}`);
+        const response = await fetch(NSE_CSV_URL);
         if (!response.ok) throw new Error('Failed to fetch NSE ISIN mapping');
         const text = await response.text();
         const lines = text.split('\n');
