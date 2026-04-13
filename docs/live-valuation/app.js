@@ -80,33 +80,53 @@ async function updateValuation() {
 
     resultDiv.innerHTML = 'Refreshing prices...';
 
-    let grandTotal = 0;
-    const updatedRows = [];
+    // Initialize statuses if not present
+    portfolioData.forEach(item => {
+        if (!item.status) item.status = 'Pending';
+    });
+
+    // Initial display
+    displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
     for (const item of portfolioData) {
-        let ticker = item.ticker;
-        if (!ticker) {
-            ticker = await fetchTicker(item.isin);
-            item.ticker = ticker; // Cache it
+        item.status = 'Fetching';
+        item.price = null;
+        item.total = 0;
+        displayResults(calculateGrandTotal(portfolioData), portfolioData);
+
+        try {
+            let ticker = item.ticker;
+            if (!ticker) {
+                ticker = await fetchTicker(item.isin);
+                item.ticker = ticker; // Cache it
+            }
+
+            let price = null;
+            if (ticker) {
+                price = await fetchPrice(ticker);
+            }
+
+            if (price !== null) {
+                item.price = price;
+                item.total = item.quantity * price;
+                item.status = 'Success';
+            } else {
+                item.status = 'Error';
+            }
+        } catch (error) {
+            console.error(`Error updating valuation for ${item.isin}:`, error);
+            item.status = 'Error';
         }
 
-        let price = null;
-        if (ticker) {
-            price = await fetchPrice(ticker);
-        }
-
-        const rowTotal = price ? item.quantity * price : 0;
-        grandTotal += rowTotal;
-
-        updatedRows.push({
-            ...item,
-            ticker: ticker || 'N/A',
-            price: price || 'N/A',
-            total: rowTotal
-        });
+        displayResults(calculateGrandTotal(portfolioData), portfolioData);
     }
+}
 
-    displayResults(grandTotal, updatedRows);
+/**
+ * Helper to calculate grand total from current portfolio data
+ */
+function calculateGrandTotal(rows) {
+    return rows.reduce((acc, row) => acc + (typeof row.total === 'number' ? row.total : 0), 0);
 }
 
 /**
@@ -134,19 +154,22 @@ function displayResults(grandTotal, rows) {
                     <th>Quantity</th>
                     <th>CMP</th>
                     <th>Row Total</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
     rows.forEach(row => {
+        const statusClass = `status-${(row.status || 'pending').toLowerCase()}`;
         tableHtml += `
             <tr>
                 <td>${row.isin}</td>
-                <td>${row.ticker}</td>
+                <td>${row.ticker || 'N/A'}</td>
                 <td>${row.quantity}</td>
-                <td>${row.price !== 'N/A' ? '₹' + row.price.toLocaleString('en-IN') : 'N/A'}</td>
-                <td>${row.total ? '₹' + row.total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
+                <td>${(row.price != null && row.price !== 'N/A') ? '₹' + row.price.toLocaleString('en-IN') : 'N/A'}</td>
+                <td>${(row.total != null && row.total !== 'N/A' && row.status === 'Success') ? '₹' + row.total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
+                <td class="${statusClass}">${row.status || 'Pending'}</td>
             </tr>
         `;
     });
