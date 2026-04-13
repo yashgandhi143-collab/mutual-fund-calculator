@@ -4,6 +4,7 @@
 
 const fileInput = document.getElementById('fileInput');
 const sheetNameInput = document.getElementById('sheetName');
+const apiKeyInput = document.getElementById('apiKey');
 const saveEodBtn = document.getElementById('saveEodBtn');
 const resultDiv = document.getElementById('result');
 const tableContainer = document.getElementById('tableContainer');
@@ -14,7 +15,7 @@ let lastFetchedSheetName = '';
 // Proxy and API configuration
 const PROXY_URL = 'https://api.allorigins.win/raw?url=';
 const YAHOO_SEARCH_URL = 'https://query2.finance.yahoo.com/v1/finance/search?q=';
-const YAHOO_CHART_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
 
 /**
  * Check if current time is within Indian Market Hours (9:15 AM - 3:30 PM IST)
@@ -64,12 +65,15 @@ async function fetchTicker(isin) {
  * Fetch Current Market Price for a Ticker
  */
 async function fetchPrice(ticker) {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) throw new Error('FMP API Key is required');
+
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(`${YAHOO_CHART_URL}${ticker}?interval=1m&range=1d`)}`);
+        const response = await fetch(`${PROXY_URL}${encodeURIComponent(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`)}`);
         if (!response.ok) throw new Error(`Price API returned ${response.status}`);
         const data = await response.json();
-        if (data.chart && data.chart.result && data.chart.result[0]) {
-            return data.chart.result[0].meta.regularMarketPrice;
+        if (data && data.length > 0 && data[0].price !== undefined) {
+            return data[0].price;
         }
         throw new Error('Price data not available');
     } catch (error) {
