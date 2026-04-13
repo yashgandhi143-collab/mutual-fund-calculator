@@ -23,6 +23,53 @@ function calculatePercentChange(current, saved) {
     return ((current - saved) / saved) * 100;
 }
 
+function parsePortfolioData(rows) {
+    let isinIdx = -1;
+    let qtyIdx = -1;
+    let headerRowIdx = -1;
+
+    const isinHeaders = ['isin', 'isin code'];
+    const qtyHeaders = ['quantity'];
+
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!Array.isArray(row)) continue;
+
+        for (let j = 0; j < row.length; j++) {
+            const cell = String(row[j] || '').toLowerCase().trim();
+            if (isinIdx === -1 && isinHeaders.includes(cell)) {
+                isinIdx = j;
+            }
+            if (qtyIdx === -1 && qtyHeaders.includes(cell)) {
+                qtyIdx = j;
+            }
+        }
+
+        if (isinIdx !== -1 && qtyIdx !== -1) {
+            headerRowIdx = i;
+            break;
+        } else {
+            isinIdx = -1;
+            qtyIdx = -1;
+        }
+    }
+
+    if (headerRowIdx === -1) return [];
+
+    const data = [];
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row) continue;
+        const isin = String(row[isinIdx] || '').trim();
+        const quantity = parseFloat(row[qtyIdx]);
+
+        if (isin && !isNaN(quantity) && isin.toLowerCase() !== 'nil') {
+            data.push({ isin, quantity });
+        }
+    }
+    return data;
+}
+
 // Test Runner
 let passed = 0;
 let failed = 0;
@@ -63,6 +110,53 @@ console.log("── Live Valuation Logic Tests ──");
     assert(calculatePercentChange(110, 100) === 10, "100 -> 110 should be 10%");
     assert(calculatePercentChange(90, 100) === -10, "100 -> 90 should be -10%");
     assert(calculatePercentChange(100, 100) === 0, "100 -> 100 should be 0%");
+}
+
+// 3. Portfolio Parsing Tests
+{
+    // Case 1: Standard headers on first row
+    const rows1 = [
+        ['ISIN', 'Quantity'],
+        ['INF209K01157', 100],
+        ['INF209K01165', 50]
+    ];
+    const data1 = parsePortfolioData(rows1);
+    assert(data1.length === 2, "Should parse 2 rows with standard headers on first row");
+    assert(data1[0].isin === 'INF209K01157' && data1[0].quantity === 100, "First row data should match");
+
+    // Case 2: Headers on 5th row
+    const rows2 = [
+        ['Portfolio Report'],
+        [],
+        ['Date: 2026-04-13'],
+        [],
+        ['ISIN', 'Other Column', 'Quantity'],
+        ['INF209K01157', 'PPLCF', 100],
+        ['INF209K01165', 'PPLCF', 50]
+    ];
+    const data2 = parsePortfolioData(rows2);
+    assert(data2.length === 2, "Should parse 2 rows with headers on 5th row");
+    assert(data2[1].isin === 'INF209K01165' && data2[1].quantity === 50, "Second row data should match");
+
+    // Case 3: Alias "ISIN Code"
+    const rows3 = [
+        ['ISIN Code', 'Quantity'],
+        ['INF209K01157', 100]
+    ];
+    const data3 = parsePortfolioData(rows3);
+    assert(data3.length === 1 && data3[0].isin === 'INF209K01157', "Should handle 'ISIN Code' alias");
+
+    // Case 4: Handle "NIL" and invalid quantities
+    const rows4 = [
+        ['ISIN', 'Quantity'],
+        ['NIL', 'NIL'],
+        ['INF209K01157', 100],
+        ['', 50],
+        ['INF209K01165', 'abc']
+    ];
+    const data4 = parsePortfolioData(rows4);
+    assert(data4.length === 1, "Should filter out NIL, empty ISIN, and invalid quantity");
+    assert(data4[0].isin === 'INF209K01157', "Only valid row should be INF209K01157");
 }
 
 console.log("\n─────────────────────────────────────────");

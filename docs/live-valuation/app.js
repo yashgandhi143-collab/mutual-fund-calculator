@@ -156,6 +156,56 @@ function displayResults(grandTotal, rows) {
 }
 
 /**
+ * Parse Portfolio Data from raw rows (2D array)
+ */
+function parsePortfolioData(rows) {
+    let isinIdx = -1;
+    let qtyIdx = -1;
+    let headerRowIdx = -1;
+
+    const isinHeaders = ['isin', 'isin code'];
+    const qtyHeaders = ['quantity'];
+
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!Array.isArray(row)) continue;
+
+        for (let j = 0; j < row.length; j++) {
+            const cell = String(row[j] || '').toLowerCase().trim();
+            if (isinIdx === -1 && isinHeaders.includes(cell)) {
+                isinIdx = j;
+            }
+            if (qtyIdx === -1 && qtyHeaders.includes(cell)) {
+                qtyIdx = j;
+            }
+        }
+
+        if (isinIdx !== -1 && qtyIdx !== -1) {
+            headerRowIdx = i;
+            break;
+        } else {
+            isinIdx = -1;
+            qtyIdx = -1;
+        }
+    }
+
+    if (headerRowIdx === -1) return [];
+
+    const data = [];
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row) continue;
+        const isin = String(row[isinIdx] || '').trim();
+        const quantity = parseFloat(row[qtyIdx]);
+
+        if (isin && !isNaN(quantity) && isin.toLowerCase() !== 'nil') {
+            data.push({ isin, quantity });
+        }
+    }
+    return data;
+}
+
+/**
  * Handle File Upload
  */
 fileInput.addEventListener('change', (e) => {
@@ -175,12 +225,9 @@ fileInput.addEventListener('change', (e) => {
 
         lastFetchedSheetName = sheetName;
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        portfolioData = jsonData.map(row => ({
-            isin: row['ISIN'],
-            quantity: parseFloat(row['Quantity'])
-        })).filter(item => item.isin && !isNaN(item.quantity));
+        portfolioData = parsePortfolioData(rows);
 
         if (portfolioData.length === 0) {
             resultDiv.innerHTML = '<span class="negative">No valid data found in ISIN and Quantity columns.</span>';
