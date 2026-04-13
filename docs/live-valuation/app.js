@@ -11,10 +11,11 @@ const tableContainer = document.getElementById('tableContainer');
 
 let portfolioData = [];
 let lastFetchedSheetName = '';
+let isinToSymbolMap = null;
 
 // Proxy and API configuration
 const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-const YAHOO_SEARCH_URL = 'https://query2.finance.yahoo.com/v1/finance/search?q=';
+const NSE_CSV_URL = 'https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv';
 const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
 
 /**
@@ -45,20 +46,48 @@ function isMarketOpen() {
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Fetch Ticker from ISIN
+ * Fetch NSE ISIN Mapping
  */
-async function fetchTicker(isin) {
+async function fetchISINMapping() {
+    if (isinToSymbolMap) return isinToSymbolMap;
+
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(YAHOO_SEARCH_URL + isin)}`);
-        if (!response.ok) throw new Error(`Search API returned ${response.status}`);
-        const data = await response.json();
-        if (data.quotes && data.quotes.length > 0) {
-            return data.quotes[0].symbol;
+        const response = await fetch(`${PROXY_URL}${encodeURIComponent(NSE_CSV_URL)}`);
+        if (!response.ok) throw new Error('Failed to fetch NSE ISIN mapping');
+        const text = await response.text();
+        const lines = text.split('\n');
+        const mapping = {};
+
+        // Skip header, parse SYMBOL (col 0) and ISIN (col 6)
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            const cols = line.split(',');
+            if (cols.length > 6) {
+                const symbol = cols[0].trim();
+                const isin = cols[6].trim();
+                if (symbol && isin) {
+                    mapping[isin] = symbol + '.NS';
+                }
+            }
         }
-        throw new Error('Symbol not found for this ISIN');
+        isinToSymbolMap = mapping;
+        return isinToSymbolMap;
     } catch (error) {
-        throw error;
+        console.error('Error fetching ISIN mapping:', error);
+        throw new Error('Could not load ISIN mapping from NSE');
     }
+}
+
+/**
+ * Get Ticker from ISIN using NSE Mapping
+ */
+async function getTicker(isin) {
+    const mapping = await fetchISINMapping();
+    if (mapping[isin]) {
+        return mapping[isin];
+    }
+    throw new Error(`Symbol not found for ISIN ${isin} in NSE list`);
 }
 
 /**
@@ -109,7 +138,7 @@ async function updateValuation() {
 
             let ticker = item.ticker;
             if (!ticker) {
-                ticker = await fetchTicker(item.isin);
+                ticker = await getTicker(item.isin);
                 item.ticker = ticker; // Cache it
             }
 
