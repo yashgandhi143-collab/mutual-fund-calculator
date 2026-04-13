@@ -39,20 +39,25 @@ function isMarketOpen() {
 }
 
 /**
+ * Delay execution for a specified time
+ */
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
  * Fetch Ticker from ISIN
  */
 async function fetchTicker(isin) {
     try {
         const response = await fetch(`${PROXY_URL}${encodeURIComponent(YAHOO_SEARCH_URL + isin)}`);
-        if (!response.ok) throw new Error('Search API failed');
+        if (!response.ok) throw new Error(`Search API returned ${response.status}`);
         const data = await response.json();
         if (data.quotes && data.quotes.length > 0) {
             return data.quotes[0].symbol;
         }
+        throw new Error('Symbol not found for this ISIN');
     } catch (error) {
-        console.error(`Error fetching ticker for ${isin}:`, error);
+        throw error;
     }
-    return null;
 }
 
 /**
@@ -61,15 +66,15 @@ async function fetchTicker(isin) {
 async function fetchPrice(ticker) {
     try {
         const response = await fetch(`${PROXY_URL}${encodeURIComponent(`${YAHOO_CHART_URL}${ticker}?interval=1m&range=1d`)}`);
-        if (!response.ok) throw new Error('Chart API failed');
+        if (!response.ok) throw new Error(`Price API returned ${response.status}`);
         const data = await response.json();
         if (data.chart && data.chart.result && data.chart.result[0]) {
             return data.chart.result[0].meta.regularMarketPrice;
         }
+        throw new Error('Price data not available');
     } catch (error) {
-        console.error(`Error fetching price for ${ticker}:`, error);
+        throw error;
     }
-    return null;
 }
 
 /**
@@ -83,6 +88,7 @@ async function updateValuation() {
     // Initialize statuses if not present
     portfolioData.forEach(item => {
         if (!item.status) item.status = 'Pending';
+        if (!item.error) item.error = '';
     });
 
     // Initial display
@@ -90,32 +96,35 @@ async function updateValuation() {
 
     for (const item of portfolioData) {
         item.status = 'Fetching';
-        item.price = null;
-        item.total = 0;
+        item.error = '';
         displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
         try {
+            // Rate limiting: wait 500ms between requests
+            await delay(500);
+
             let ticker = item.ticker;
             if (!ticker) {
                 ticker = await fetchTicker(item.isin);
                 item.ticker = ticker; // Cache it
             }
 
-            let price = null;
-            if (ticker) {
-                price = await fetchPrice(ticker);
-            }
+            const price = await fetchPrice(ticker);
 
             if (price !== null) {
                 item.price = price;
                 item.total = item.quantity * price;
                 item.status = 'Success';
             } else {
+                item.total = 0;
                 item.status = 'Error';
+                item.error = 'Price not available';
             }
         } catch (error) {
             console.error(`Error updating valuation for ${item.isin}:`, error);
+            item.total = 0;
             item.status = 'Error';
+            item.error = error.message;
         }
 
         displayResults(calculateGrandTotal(portfolioData), portfolioData);
@@ -134,16 +143,31 @@ function calculateGrandTotal(rows) {
  */
 function displayResults(grandTotal, rows) {
     const savedEod = JSON.parse(localStorage.getItem('eodValue') || 'null');
-    let percentChangeHtml = '';
-    let changeClass = '';
+    let comparisonHtml = '';
 
     if (savedEod && savedEod.value) {
-        const change = ((grandTotal - savedEod.value) / savedEod.value) * 100;
-        changeClass = change >= 0 ? 'positive' : 'negative';
-        percentChangeHtml = ` (<span class="${changeClass}">${change.toFixed(2)}%</span>)`;
+        const changeValue = grandTotal - savedEod.value;
+        const changePercent = (changeValue / savedEod.value) * 100;
+        const changeClass = changeValue >= 0 ? 'positive' : 'negative';
+        const sign = changeValue >= 0 ? '+' : '';
+
+        comparisonHtml = `
+            <div class="comparison-summary">
+                Compared to saved EOD:
+                <span class="${changeClass}">
+                    ${sign}₹${changeValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    (${sign}${changePercent.toFixed(2)}%)
+                </span>
+            </div>
+        `;
     }
 
-    resultDiv.innerHTML = `${lastFetchedSheetName} - Current Valuation: ₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${percentChangeHtml}`;
+    resultDiv.innerHTML = `
+        <div class="valuation-header">
+            ${lastFetchedSheetName} - Current Valuation: ₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </div>
+        ${comparisonHtml}
+    `;
 
     let tableHtml = `
         <table>
@@ -154,7 +178,7 @@ function displayResults(grandTotal, rows) {
                     <th>Quantity</th>
                     <th>CMP</th>
                     <th>Row Total</th>
-                    <th>Status</th>
+                    <th>Status / Error</th>
                 </tr>
             </thead>
             <tbody>
@@ -162,19 +186,31 @@ function displayResults(grandTotal, rows) {
 
     rows.forEach(row => {
         const statusClass = `status-${(row.status || 'pending').toLowerCase()}`;
+        const displayStatus = row.status === 'Error' ? `Error: ${row.error || 'Unknown'}` : (row.status || 'Pending');
+
         tableHtml += `
             <tr>
                 <td>${row.isin}</td>
                 <td>${row.ticker || 'N/A'}</td>
                 <td>${row.quantity}</td>
-                <td>${(row.price != null && row.price !== 'N/A') ? '₹' + row.price.toLocaleString('en-IN') : 'N/A'}</td>
+                <td>${(row.price != null && row.price !== 'N/A') ? '₹' + row.price.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
                 <td>${(row.total != null && row.total !== 'N/A' && row.status === 'Success') ? '₹' + row.total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
-                <td class="${statusClass}">${row.status || 'Pending'}</td>
+                <td class="${statusClass}">${displayStatus}</td>
             </tr>
         `;
     });
 
-    tableHtml += '</tbody></table>';
+    tableHtml += `
+            </tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background-color: #f9f9f9;">
+                    <td colspan="4" style="text-align: right;">Grand Total:</td>
+                    <td>₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    `;
     tableContainer.innerHTML = tableHtml;
 }
 
