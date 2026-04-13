@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Portfolio Valuation — Wealth Builder</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            background-color: #FFFFFF;
+            color: #008000;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid #008000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #008000;
+            background: #fff;
+            color: #008000;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #008000;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #result {
+            margin-top: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .positive {
+            color: #00FF00;
+        }
+        .negative {
+            color: #FF0000;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #008000;
+            padding: 8px;
+            text-align: left;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #008000;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Portfolio Valuation</h1>
+
+        <div class="input-group">
+            <label for="sheetName">Sheet Name:</label>
+            <input type="text" id="sheetName" placeholder="e.g., Portfolio" value="Sheet1">
+        </div>
+
+        <div class="input-group">
+            <label for="fileInput">Upload Excel File (.xlsx):</label>
+            <input type="file" id="fileInput" accept=".xlsx">
+        </div>
+
+        <button id="saveEodBtn">Save EOD Value</button>
+
+        <div id="result">
+            Upload a file to see valuation.
+        </div>
+
+        <div id="tableContainer"></div>
+
+        <a href="../index.html" class="back-link">← Back to All Calculators</a>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
