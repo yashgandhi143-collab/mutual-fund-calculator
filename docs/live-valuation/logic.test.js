@@ -13,7 +13,7 @@ function isMarketOpenAt(date) {
 
     const currentTimeInMinutes = hours * 60 + minutes;
     const marketOpenTimeInMinutes = 9 * 60 + 15;
-    const marketCloseTimeInMinutes = 15 * 60 + 30;
+    const marketCloseTimeInMinutes = 14 * 60; // 2:00 PM IST
 
     return currentTimeInMinutes >= marketOpenTimeInMinutes && currentTimeInMinutes <= marketCloseTimeInMinutes;
 }
@@ -96,9 +96,9 @@ console.log("── Live Valuation Logic Tests ──");
     const mon9amIST = new Date('2026-03-09T03:30:00Z');
     assert(isMarketOpenAt(mon9amIST) === false, "Market should be closed at 9:00 AM IST on Monday");
 
-    // Monday 3:45 PM IST -> UTC 10:15 AM
-    const mon345pmIST = new Date('2026-03-09T10:15:00Z');
-    assert(isMarketOpenAt(mon345pmIST) === false, "Market should be closed at 3:45 PM IST on Monday");
+    // Monday 2:15 PM IST -> UTC 8:45 AM
+    const mon215pmIST = new Date('2026-03-09T08:45:00Z');
+    assert(isMarketOpenAt(mon215pmIST) === false, "Market should be closed at 2:15 PM IST on Monday");
 
     // Sunday 12:00 PM IST -> UTC 6:30 AM
     const sun12pmIST = new Date('2026-03-08T06:30:00Z');

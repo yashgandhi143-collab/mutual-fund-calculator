@@ -53,7 +53,7 @@ function parseCSV(text) {
 async function fetchPrice(symbol, apiKey) {
     const ticker = `${symbol}.NS`;
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`)}`);
+        const response = await fetch(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (data && data.length > 0 && data[0].price !== undefined) {
