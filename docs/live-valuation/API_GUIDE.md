@@ -5,17 +5,17 @@ This document explains how the Live Portfolio Valuation tool fetches market data
 ## Overview
 
 The tool uses a two-step process to get the Current Market Price (CMP) for a security given its ISIN:
-1. **ISIN to Ticker**: Maps the ISIN code (e.g., `INF209K01157`) to a Yahoo Finance Ticker symbol (e.g., `PARAGPARIKH.NS`).
+1. **ISIN to Ticker**: Maps the ISIN code (e.g., `INE144J01027`) to a NSE ticker symbol (e.g., `20MICRONS.NS`).
 2. **Ticker to Price**: Fetches the latest price for that Ticker.
 
 ## APIs Used
 
-### 1. Yahoo Finance Search API
-Used to find the ticker symbol for a given ISIN.
+### 1. NSE EQUITY_L CSV
+Used to map the ISIN code to a NSE ticker symbol.
 
-- **URL**: `https://query2.finance.yahoo.com/v1/finance/search?q={ISIN}`
-- **Method**: GET
-- **Response**: A JSON object containing a `quotes` array. The first quote's `symbol` is used.
+- **URL**: `https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv`
+- **Method**: GET (Fetched via CORS Proxy)
+- **Mapping**: Column index 6 (ISIN) is mapped to column index 0 (Symbol). A `.NS` suffix is appended to the symbol.
 
 ### 2. Financial Modeling Prep Profile API
 Used to get the real-time market price for a ticker symbol.
@@ -43,7 +43,7 @@ To avoid being blocked by Yahoo Finance or the proxy, the following measures are
 ## Error Handling
 
 The tool provides simplified error messages in the "Status / Error" column:
-- **"Symbol not found for this ISIN"**: The Search API couldn't find a matching ticker.
+- **"Symbol not found in NSE mapping for this ISIN"**: The ISIN was not found in the NSE EQUITY_L CSV.
 - **"Price data not available"**: The Profile API returned no price data for the ticker.
 - **"API returned 429"**: Too many requests (Rate Limited).
 - **"Network Error"**: Connection issues.

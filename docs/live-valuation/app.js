@@ -14,8 +14,39 @@ let lastFetchedSheetName = '';
 
 // Proxy and API configuration
 const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-const YAHOO_SEARCH_URL = 'https://query2.finance.yahoo.com/v1/finance/search?q=';
+const NSE_CSV_URL = 'https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv';
 const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
+
+let nseIsinMap = null;
+
+/**
+ * Fetch and parse NSE EQUITY_L CSV to map ISIN to Symbol
+ */
+async function loadNseIsinMapping() {
+    if (nseIsinMap) return;
+    try {
+        const response = await fetch(`${PROXY_URL}${encodeURIComponent(NSE_CSV_URL)}`);
+        if (!response.ok) throw new Error(`NSE CSV fetch failed: ${response.status}`);
+        const csvText = await response.text();
+        const lines = csvText.split('\n');
+        nseIsinMap = {};
+
+        // Skip header, parse lines
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(',');
+            if (cols.length >= 7) {
+                const symbol = cols[0].trim();
+                const isin = cols[6].trim();
+                if (symbol && isin) {
+                    nseIsinMap[isin] = symbol;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading NSE ISIN mapping:', error);
+        throw new Error('Failed to load ISIN-to-Symbol mapping');
+    }
+}
 
 /**
  * Check if current time is within Indian Market Hours (9:15 AM - 3:30 PM IST)
@@ -49,13 +80,11 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  */
 async function fetchTicker(isin) {
     try {
-        const response = await fetch(`${PROXY_URL}${encodeURIComponent(YAHOO_SEARCH_URL + isin)}`);
-        if (!response.ok) throw new Error(`Search API returned ${response.status}`);
-        const data = await response.json();
-        if (data.quotes && data.quotes.length > 0) {
-            return data.quotes[0].symbol;
+        await loadNseIsinMapping();
+        if (nseIsinMap && nseIsinMap[isin]) {
+            return nseIsinMap[isin] + '.NS';
         }
-        throw new Error('Symbol not found for this ISIN');
+        throw new Error('Symbol not found in NSE mapping for this ISIN');
     } catch (error) {
         throw error;
     }
