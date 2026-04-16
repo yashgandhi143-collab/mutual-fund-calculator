@@ -23,6 +23,20 @@ function calculatePercentChange(current, saved) {
     return ((current - saved) / saved) * 100;
 }
 
+function calculateWeightageAndImpact(portfolio) {
+    const total = portfolio.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+    portfolio.forEach(item => {
+        if (total > 0) {
+            item.weightage = (item.quantity * item.price / total) * 100;
+            item.impact = (item.weightage / 100) * item.changesPercentage;
+        } else {
+            item.weightage = 0;
+            item.impact = 0;
+        }
+    });
+    return portfolio;
+}
+
 function parsePortfolioData(rows) {
     let isinIdx = -1;
     let qtyIdx = -1;
@@ -157,6 +171,36 @@ console.log("── Live Valuation Logic Tests ──");
     const data4 = parsePortfolioData(rows4);
     assert(data4.length === 1, "Should filter out NIL, empty ISIN, and invalid quantity");
     assert(data4[0].isin === 'INF209K01157', "Only valid row should be INF209K01157");
+}
+
+// 4. Weightage and Impact Tests
+{
+    const portfolio = [
+        { isin: 'A', quantity: 10, price: 100, changesPercentage: 10 }, // Value: 1000
+        { isin: 'B', quantity: 20, price: 50,  changesPercentage: -5 }, // Value: 1000
+    ];
+    // Total Value: 2000
+    // Weight A: 50%, Impact A: 5%
+    // Weight B: 50%, Impact B: -2.5%
+    // Total Impact: 2.5%
+
+    calculateWeightageAndImpact(portfolio);
+
+    assert(portfolio[0].weightage === 50, "Weightage of A should be 50%");
+    assert(portfolio[0].impact === 5, "Impact of A should be 5%");
+    assert(portfolio[1].weightage === 50, "Weightage of B should be 50%");
+    assert(portfolio[1].impact === -2.5, "Impact of B should be -2.5%");
+
+    const totalImpact = portfolio.reduce((acc, item) => acc + item.impact, 0);
+    assert(totalImpact === 2.5, "Total Impact should be 2.5%");
+
+    // Test with zero total
+    const zeroPortfolio = [
+        { isin: 'A', quantity: 0, price: 100, changesPercentage: 10 }
+    ];
+    calculateWeightageAndImpact(zeroPortfolio);
+    assert(zeroPortfolio[0].weightage === 0, "Weightage should be 0 for zero total");
+    assert(zeroPortfolio[0].impact === 0, "Impact should be 0 for zero total");
 }
 
 console.log("\n─────────────────────────────────────────");

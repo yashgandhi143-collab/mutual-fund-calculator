@@ -15,7 +15,7 @@ let isinToSymbolMap = null;
 
 // Proxy and API configuration
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
+const FMP_QUOTE_URL = 'https://financialmodelingprep.com/stable/quote?symbol=';
 const FMP_ISIN_URL = 'https://financialmodelingprep.com/stable/search-isin?isin=';
 
 /**
@@ -109,18 +109,36 @@ async function getTicker(isin) {
 }
 
 /**
- * Fetch Current Market Price for a Ticker
+ * Fetch Current Market Price for a Ticker with 1-hour caching
  */
 async function fetchPrice(ticker) {
     const apiKey = apiKeyInput.value.trim();
     if (!apiKey) throw new Error('FMP API Key is required');
 
+    const cacheKey = `price_${ticker}`;
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+        const { price, changesPercentage, timestamp } = JSON.parse(cachedData);
+        const oneHour = 60 * 60 * 1000;
+        if (Date.now() - timestamp < oneHour) {
+            console.log(`Using cached price for ${ticker}`);
+            return { price, changesPercentage, fromCache: true };
+        }
+    }
+
     try {
-        const response = await fetch(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`);
+        const response = await fetch(`${FMP_QUOTE_URL}${ticker}&apikey=${apiKey}`);
         if (!response.ok) throw new Error(`Price API returned ${response.status}`);
         const data = await response.json();
         if (data && data.length > 0 && data[0].price !== undefined) {
-            return data[0].price;
+            const priceData = {
+                price: data[0].price,
+                changesPercentage: data[0].changesPercentage || 0,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(cacheKey, JSON.stringify(priceData));
+            return { ...priceData, fromCache: false };
         }
         throw new Error('Price data not available');
     } catch (error) {
@@ -151,19 +169,17 @@ async function updateValuation() {
         displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
         try {
-            // Rate limiting: wait 500ms between requests
-            await delay(500);
-
             let ticker = item.ticker;
             if (!ticker) {
                 ticker = await getTicker(item.isin);
                 item.ticker = ticker; // Cache it
             }
 
-            const price = await fetchPrice(ticker);
+            const { price, changesPercentage, fromCache } = await fetchPrice(ticker);
 
             if (price !== null) {
                 item.price = price;
+                item.changesPercentage = changesPercentage;
                 item.total = item.quantity * price;
                 item.status = 'Success';
             } else {
@@ -171,6 +187,10 @@ async function updateValuation() {
                 item.status = 'Error';
                 item.error = 'Price not available';
             }
+
+            // Rate limiting: wait 500ms between requests ONLY if we didn't use cache
+            if (!fromCache) await delay(500);
+
         } catch (error) {
             console.error(`Error updating valuation for ${item.isin}:`, error);
             item.total = 0;
@@ -178,7 +198,19 @@ async function updateValuation() {
             item.error = error.message;
         }
 
-        displayResults(calculateGrandTotal(portfolioData), portfolioData);
+        // Recalculate weights and impacts based on CURRENT total of successfully fetched items
+        const currentGrandTotal = calculateGrandTotal(portfolioData);
+        portfolioData.forEach(row => {
+            if (row.status === 'Success' && currentGrandTotal > 0) {
+                row.weightage = (row.total / currentGrandTotal) * 100;
+                row.impact = (row.weightage / 100) * row.changesPercentage;
+            } else {
+                row.weightage = 0;
+                row.impact = 0;
+            }
+        });
+
+        displayResults(currentGrandTotal, portfolioData);
     }
 }
 
@@ -213,9 +245,16 @@ function displayResults(grandTotal, rows) {
         `;
     }
 
+    const totalImpact = rows.reduce((acc, row) => acc + (row.impact || 0), 0);
+    const impactClass = totalImpact >= 0 ? 'positive' : 'negative';
+    const impactSign = totalImpact >= 0 ? '+' : '';
+
     resultDiv.innerHTML = `
         <div class="valuation-header">
             ${lastFetchedSheetName} - Current Valuation: ₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <span class="${impactClass}" style="margin-left: 10px; font-size: 0.9rem;">
+                (${impactSign}${totalImpact.toFixed(2)}% Impact)
+            </span>
         </div>
         ${comparisonHtml}
     `;
@@ -226,10 +265,12 @@ function displayResults(grandTotal, rows) {
                 <tr>
                     <th>ISIN</th>
                     <th>Ticker</th>
-                    <th>Quantity</th>
+                    <th>Qty</th>
                     <th>CMP</th>
-                    <th>Row Total</th>
-                    <th>Status / Error</th>
+                    <th>Weight (%)</th>
+                    <th>Day Chg (%)</th>
+                    <th>Impact (%)</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -244,8 +285,10 @@ function displayResults(grandTotal, rows) {
                 <td>${row.isin}</td>
                 <td>${row.ticker || 'N/A'}</td>
                 <td>${row.quantity}</td>
-                <td>${(row.price != null && row.price !== 'N/A') ? '₹' + row.price.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
-                <td>${(row.total != null && row.total !== 'N/A' && row.status === 'Success') ? '₹' + row.total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
+                <td>${(row.price != null) ? '₹' + row.price.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : 'N/A'}</td>
+                <td>${(row.weightage != null && row.status === 'Success') ? row.weightage.toFixed(2) + '%' : 'N/A'}</td>
+                <td>${(row.changesPercentage != null && row.status === 'Success') ? row.changesPercentage.toFixed(2) + '%' : 'N/A'}</td>
+                <td>${(row.impact != null && row.status === 'Success') ? row.impact.toFixed(4) + '%' : 'N/A'}</td>
                 <td class="${statusClass}">${displayStatus}</td>
             </tr>
         `;
@@ -255,8 +298,13 @@ function displayResults(grandTotal, rows) {
             </tbody>
             <tfoot>
                 <tr style="font-weight: bold; background-color: #f9f9f9;">
+                    <td colspan="4" style="text-align: right;">Total Portfolio Impact:</td>
+                    <td colspan="3" class="${impactClass}">${impactSign}${totalImpact.toFixed(2)}%</td>
+                    <td></td>
+                </tr>
+                <tr style="font-weight: bold; background-color: #f9f9f9;">
                     <td colspan="4" style="text-align: right;">Grand Total:</td>
-                    <td>₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td colspan="3">₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td></td>
                 </tr>
             </tfoot>
