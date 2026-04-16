@@ -8,6 +8,8 @@ const saveEodBtn = document.getElementById('saveEodBtn');
 const refreshValuationBtn = document.getElementById('refreshValuationBtn');
 const resultDiv = document.getElementById('result');
 const tableContainer = document.getElementById('tableContainer');
+const logContent = document.getElementById('logContent');
+const logContainer = document.getElementById('logContainer');
 
 let portfolioData = [];
 let lastFetchedSheetName = '';
@@ -43,6 +45,37 @@ function isMarketOpen() {
  * Delay execution for a specified time
  */
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Log API requests and responses to the UI
+ */
+function logToUI(type, message, details = '') {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+
+    const timestamp = new Date().toLocaleTimeString();
+    const typeClass = `log-${type.toLowerCase()}`;
+
+    let detailsHtml = '';
+    if (details) {
+        if (typeof details === 'object') {
+            detailsHtml = `<pre style="margin: 5px 0; font-size: 0.75rem; white-space: pre-wrap;">${JSON.stringify(details, null, 2)}</pre>`;
+        } else {
+            detailsHtml = `<div style="margin: 5px 0; font-size: 0.75rem;">${details}</div>`;
+        }
+    }
+
+    entry.innerHTML = `
+        <span class="log-timestamp">[${timestamp}]</span>
+        <span class="${typeClass}">${type.toUpperCase()}:</span>
+        <span>${message}</span>
+        ${detailsHtml}
+    `;
+
+    logContent.appendChild(entry);
+    // Auto-scroll to bottom
+    logContainer.scrollTop = logContainer.scrollHeight;
+}
 
 /**
  * Fetch NSE ISIN Mapping
@@ -83,15 +116,22 @@ async function fetchISINMapping() {
  */
 async function getTicker(isin) {
     // Try Search API first
+    const url = `${API_BASE_URL}/search?q=${isin}`;
+    logToUI('request', `Searching ticker for ISIN: ${isin}`, url);
+
     try {
-        const response = await fetch(`${API_BASE_URL}/search?q=${isin}`);
+        const response = await fetch(url);
         if (response.ok) {
             const data = await response.json();
+            logToUI('response', `Search results for ${isin}`, data);
             if (data.status === 'success' && data.results && data.results.length > 0) {
                 return data.results[0].symbol + '.NS';
             }
+        } else {
+            logToUI('error', `Search API failed for ${isin}`, `Status: ${response.status}`);
         }
     } catch (error) {
+        logToUI('error', `Search API error for ${isin}`, error.message);
         console.warn(`Search API failed for ${isin}, falling back to NSE list:`, error);
     }
 
@@ -105,11 +145,13 @@ async function getTicker(isin) {
 
 /**
  * Update the valuation results by fetching latest prices
+ * Process row-by-row: Ticker -> Price -> Next Row
  */
 async function updateValuation() {
     if (portfolioData.length === 0) return;
 
-    resultDiv.innerHTML = 'Refreshing prices...';
+    resultDiv.innerHTML = 'Updating valuation...';
+    const oneHour = 60 * 60 * 1000;
 
     // Helper to robustly extract numeric values from API response
     const extractValue = (obj, key) => {
@@ -117,116 +159,97 @@ async function updateValuation() {
         return (typeof obj[key] === 'object' && obj[key].value !== undefined) ? obj[key].value : obj[key];
     };
 
-    // 1. Resolve all tickers first
-    for (const item of portfolioData) {
-        if (!item.ticker) {
-            try {
+    for (let i = 0; i < portfolioData.length; i++) {
+        const item = portfolioData[i];
+
+        try {
+            // 1. Resolve Ticker if missing
+            if (!item.ticker) {
                 item.status = 'Fetching Ticker';
                 displayResults(calculateGrandTotal(portfolioData), portfolioData);
                 item.ticker = await getTicker(item.isin);
-            } catch (error) {
-                item.status = 'Error';
-                item.error = 'Ticker not found';
             }
-        }
-    }
 
-    // 2. Identify tickers that need updating (not in cache or expired)
-    const oneHour = 60 * 60 * 1000;
-    const tickersToFetch = [];
+            // 2. Fetch Price (Check cache first)
+            const cacheKey = `price_${item.ticker}`;
+            const cachedData = localStorage.getItem(cacheKey);
+            let lastPrice = null;
+            let percentChange = 0;
 
-    portfolioData.forEach(item => {
-        if (!item.ticker) return;
-
-        const cacheKey = `price_${item.ticker}`;
-        const cachedData = localStorage.getItem(cacheKey);
-
-        if (cachedData) {
-            const { price, changesPercentage, timestamp } = JSON.parse(cachedData);
-            if (Date.now() - timestamp < oneHour) {
-                item.price = price;
-                item.changesPercentage = changesPercentage;
-                item.total = item.quantity * price;
-                item.status = 'Success';
-                return;
+            if (cachedData) {
+                const { price, changesPercentage, timestamp } = JSON.parse(cachedData);
+                if (Date.now() - timestamp < oneHour) {
+                    lastPrice = price;
+                    percentChange = changesPercentage;
+                    item.status = 'Success';
+                }
             }
-        }
-        tickersToFetch.push(item.ticker);
-        item.status = 'Fetching Price';
-    });
 
-    displayResults(calculateGrandTotal(portfolioData), portfolioData);
+            if (lastPrice === null) {
+                item.status = 'Fetching Price';
+                displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
-    // 3. Individual Fetch Prices
-    if (tickersToFetch.length > 0) {
-        const uniqueTickers = [...new Set(tickersToFetch)];
+                const url = `${API_BASE_URL}/stock?symbol=${item.ticker}&res=num`;
+                logToUI('request', `Fetching price for: ${item.ticker}`, url);
 
-        for (let i = 0; i < uniqueTickers.length; i++) {
-            const ticker = uniqueTickers[i];
-            try {
-                const response = await fetch(`${API_BASE_URL}/stock?symbol=${ticker}&res=num`);
-
+                const response = await fetch(url);
                 if (!response.ok) throw new Error(`API returned ${response.status}`);
+
                 const data = await response.json();
+                logToUI('response', `Price data for ${item.ticker}`, data);
 
                 if (data.status === 'success' && data.data) {
-                    // Handle potential double-nesting and robustly extract values
                     let stock = data.data;
                     if (stock.data && (stock.data.last_price !== undefined || stock.data.percent_change !== undefined)) {
                         stock = stock.data;
                     }
 
-                    const lastPrice = extractValue(stock, 'last_price');
-                    const percentChange = extractValue(stock, 'percent_change');
+                    lastPrice = extractValue(stock, 'last_price');
+                    percentChange = extractValue(stock, 'percent_change') || 0;
 
                     if (lastPrice !== null) {
                         const priceData = {
                             price: lastPrice,
-                            changesPercentage: percentChange || 0,
+                            changesPercentage: percentChange,
                             timestamp: Date.now()
                         };
-                        localStorage.setItem(`price_${ticker}`, JSON.stringify(priceData));
-
-                        // Update all items in portfolio with this ticker
-                        portfolioData.forEach(item => {
-                            if (item.ticker === ticker) {
-                                item.price = lastPrice;
-                                item.changesPercentage = percentChange || 0;
-                                item.total = item.quantity * item.price;
-                                item.status = 'Success';
-                            }
-                        });
+                        localStorage.setItem(cacheKey, JSON.stringify(priceData));
+                        item.status = 'Success';
                     } else {
                         throw new Error('Price data missing in response');
                     }
                 } else {
-                    portfolioData.forEach(item => {
-                        if (item.ticker === ticker && item.status === 'Fetching Price') {
-                            item.status = 'Error';
-                            item.error = 'Price not available';
-                        }
-                    });
+                    throw new Error('Invalid API response structure');
                 }
-                displayResults(calculateGrandTotal(portfolioData), portfolioData);
-            } catch (error) {
-                console.error(`Fetch failed for ticker ${ticker}:`, error);
-                // Mark ticker as Error
-                portfolioData.forEach(item => {
-                    if (item.ticker === ticker && item.status === 'Fetching Price') {
-                        item.status = 'Error';
-                        item.error = error.message;
-                    }
-                });
             }
 
-            // Small delay between requests to be safe
-            if (i < uniqueTickers.length - 1) {
+            // 3. Update Item State
+            if (item.status === 'Success') {
+                item.price = lastPrice;
+                item.changesPercentage = percentChange;
+                item.total = item.quantity * lastPrice;
+            } else {
+                item.total = 0;
+            }
+
+            // Refresh UI after each row
+            displayResults(calculateGrandTotal(portfolioData), portfolioData);
+
+            // Small delay between requests to avoid rate limits
+            if (i < portfolioData.length - 1) {
                 await delay(200);
             }
+        } catch (error) {
+            logToUI('error', `Process failed for row ${i + 1}: ${error.message}`);
+            item.status = 'Error';
+            item.error = error.message;
+            displayResults(calculateGrandTotal(portfolioData), portfolioData);
+            logToUI('error', `Stopping: sequential processing halted due to error.`);
+            return; // STOP processing on failure as per user request
         }
     }
 
-    // 4. Final Recalculation and Display
+    // 4. Final Recalculation for Weightage and Impact
     const currentGrandTotal = calculateGrandTotal(portfolioData);
     portfolioData.forEach(row => {
         if (row.status === 'Success' && currentGrandTotal > 0) {
@@ -445,6 +468,8 @@ saveEodBtn.addEventListener('click', () => {
  * Handle Refresh Valuation
  */
 refreshValuationBtn.addEventListener('click', () => {
+    // Clear logs
+    logContent.innerHTML = '';
     // Clear price cache to force fresh data
     portfolioData.forEach(item => {
         if (item.ticker) {
