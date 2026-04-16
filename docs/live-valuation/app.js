@@ -156,7 +156,14 @@ async function updateValuation() {
     // Helper to robustly extract numeric values from API response
     const extractValue = (obj, key) => {
         if (!obj || obj[key] === undefined || obj[key] === null) return null;
-        return (typeof obj[key] === 'object' && obj[key].value !== undefined) ? obj[key].value : obj[key];
+        let val = obj[key];
+        if (typeof val === 'object' && val.value !== undefined) {
+            val = val.value;
+        }
+        if (typeof val === 'string') {
+            val = parseFloat(val.replace(/,/g, ''));
+        }
+        return isNaN(val) ? null : val;
     };
 
     for (let i = 0; i < portfolioData.length; i++) {
@@ -198,14 +205,24 @@ async function updateValuation() {
                 const data = await response.json();
                 logToUI('response', `Price data for ${item.ticker}`, data);
 
-                if (data.status === 'success' && data.data) {
-                    let stock = data.data;
-                    if (stock.data && (stock.data.last_price !== undefined || stock.data.percent_change !== undefined)) {
-                        stock = stock.data;
+                if (data.status === 'success') {
+                    let stock = null;
+
+                    // Robustly find the stock data object in common API response structures
+                    if (data.data && data.data.last_price !== undefined) {
+                        stock = data.data;
+                    } else if (data.data && data.data.data && data.data.data.last_price !== undefined) {
+                        stock = data.data.data;
+                    } else if (Array.isArray(data.stocks) && data.stocks.length > 0) {
+                        stock = data.stocks[0];
+                    } else if (data.last_price !== undefined) {
+                        stock = data;
                     }
 
-                    lastPrice = extractValue(stock, 'last_price');
-                    percentChange = extractValue(stock, 'percent_change') || 0;
+                    if (stock) {
+                        lastPrice = extractValue(stock, 'last_price');
+                        percentChange = extractValue(stock, 'percent_change') || 0;
+                    }
 
                     if (lastPrice !== null) {
                         const priceData = {
