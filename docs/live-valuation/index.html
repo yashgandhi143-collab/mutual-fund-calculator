@@ -84,6 +84,28 @@
             padding: 8px;
             text-align: left;
         }
+        #logContainer {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+            word-break: break-all;
+        }
+        .log-request { color: #007bff; font-weight: bold; }
+        .log-response { color: #28a745; font-weight: bold; }
+        .log-error { color: #dc3545; font-weight: bold; }
+        .log-timestamp { color: #888; margin-right: 10px; }
         .back-link {
             display: inline-block;
             margin-top: 20px;
@@ -119,6 +141,11 @@
         </div>
 
         <div id="tableContainer"></div>
+
+        <div id="logContainer">
+            <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ccc; color: #333;">API Logs</div>
+            <div id="logContent"></div>
+        </div>
 
         <a href="../index.html" class="back-link">← Back to All Calculators</a>
     </div>
