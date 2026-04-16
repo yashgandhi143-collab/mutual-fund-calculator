@@ -151,64 +151,61 @@ async function updateValuation() {
 
     displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
-    // 3. Batch Fetch Prices with Chunking (to avoid URL length limits)
+    // 3. Individual Fetch Prices
     if (tickersToFetch.length > 0) {
         const uniqueTickers = [...new Set(tickersToFetch)];
-        const chunkSize = 50;
 
-        for (let i = 0; i < uniqueTickers.length; i += chunkSize) {
-            const chunk = uniqueTickers.slice(i, i + chunkSize);
+        for (let i = 0; i < uniqueTickers.length; i++) {
+            const ticker = uniqueTickers[i];
             try {
-                const response = await fetch(`${API_BASE_URL}/stock/list?symbols=${chunk.join(',')}&res=num`);
+                const response = await fetch(`${API_BASE_URL}/stock?symbol=${ticker}&res=num`);
 
                 if (!response.ok) throw new Error(`API returned ${response.status}`);
                 const data = await response.json();
 
-                if (data.status === 'success' && data.stocks) {
-                    data.stocks.forEach(stock => {
-                        const priceData = {
-                            price: stock.last_price,
-                            changesPercentage: stock.percent_change,
-                            timestamp: Date.now()
-                        };
-                        localStorage.setItem(`price_${stock.ticker}`, JSON.stringify(priceData));
+                if (data.status === 'success' && data.data) {
+                    const stock = data.data;
+                    const priceData = {
+                        price: stock.last_price,
+                        changesPercentage: stock.percent_change,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(`price_${ticker}`, JSON.stringify(priceData));
 
-                        // Update all items in portfolio with this ticker
-                        portfolioData.forEach(item => {
-                            if (item.ticker === stock.ticker) {
-                                item.price = stock.last_price;
-                                item.changesPercentage = stock.percent_change;
-                                item.total = item.quantity * item.price;
-                                item.status = 'Success';
-                            }
-                        });
+                    // Update all items in portfolio with this ticker
+                    portfolioData.forEach(item => {
+                        if (item.ticker === ticker) {
+                            item.price = stock.last_price;
+                            item.changesPercentage = stock.percent_change;
+                            item.total = item.quantity * item.price;
+                            item.status = 'Success';
+                        }
+                    });
+                } else {
+                    portfolioData.forEach(item => {
+                        if (item.ticker === ticker && item.status === 'Fetching Price') {
+                            item.status = 'Error';
+                            item.error = 'Price not available';
+                        }
                     });
                 }
                 displayResults(calculateGrandTotal(portfolioData), portfolioData);
             } catch (error) {
-                console.error(`Batch fetch failed for chunk starting at index ${i} (Tickers: ${chunk.join(',')}):`, error);
-                // Mark tickers in this chunk as Error
+                console.error(`Fetch failed for ticker ${ticker}:`, error);
+                // Mark ticker as Error
                 portfolioData.forEach(item => {
-                    if (chunk.includes(item.ticker) && item.status === 'Fetching Price') {
+                    if (item.ticker === ticker && item.status === 'Fetching Price') {
                         item.status = 'Error';
                         item.error = error.message;
                     }
                 });
             }
 
-            // Small delay between chunks to be safe
-            if (i + chunkSize < uniqueTickers.length) {
+            // Small delay between requests to be safe
+            if (i < uniqueTickers.length - 1) {
                 await delay(200);
             }
         }
-
-        // Mark remaining as error if still in "Fetching Price" (e.g., missing from API response)
-        portfolioData.forEach(item => {
-            if (item.status === 'Fetching Price') {
-                item.status = 'Error';
-                item.error = 'Price not available';
-            }
-        });
     }
 
     // 4. Final Recalculation and Display
