@@ -2,7 +2,6 @@
  * test-prices.js — Stress Test for FMP API with NSE ISINs
  */
 
-const apiKeyInput = document.getElementById('apiKey');
 const startBtn = document.getElementById('startBtn');
 const statusDiv = document.getElementById('status');
 const progressBar = document.getElementById('progressBar');
@@ -10,7 +9,7 @@ const summaryDiv = document.getElementById('summary');
 const resultsTableContainer = document.getElementById('resultsTableContainer');
 
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const FMP_PROFILE_URL = 'https://financialmodelingprep.com/stable/profile?symbol=';
+const API_BASE_URL = 'https://nse-api-ruby.vercel.app';
 
 let testResults = [];
 let successCount = 0;
@@ -49,14 +48,14 @@ function parseCSV(text) {
     return results;
 }
 
-async function fetchPrice(symbol, apiKey) {
+async function fetchPrice(symbol) {
     const ticker = `${symbol}.NS`;
     try {
-        const response = await fetch(`${FMP_PROFILE_URL}${ticker}&apikey=${apiKey}`);
+        const response = await fetch(`${API_BASE_URL}/stock?symbol=${ticker}&res=num`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        if (data && data.length > 0 && data[0].price !== undefined) {
-            return { price: data[0].price, status: 'Success' };
+        if (data.status === 'success' && data.data && data.data.last_price !== undefined) {
+            return { price: data.data.last_price, status: 'Success' };
         }
         return { price: null, status: 'Not Found' };
     } catch (error) {
@@ -65,12 +64,6 @@ async function fetchPrice(symbol, apiKey) {
 }
 
 async function startTesting() {
-    const apiKey = apiKeyInput.value.trim();
-    if (!apiKey) {
-        alert('Please enter an FMP API Key');
-        return;
-    }
-
     startBtn.disabled = true;
     testResults = [];
     successCount = 0;
@@ -105,7 +98,7 @@ async function startTesting() {
             // Wait to avoid aggressive rate limiting
             await delay(200);
 
-            const result = await fetchPrice(stock.symbol, apiKey);
+            const result = await fetchPrice(stock.symbol);
 
             if (result.status === 'Success') {
                 successCount++;
