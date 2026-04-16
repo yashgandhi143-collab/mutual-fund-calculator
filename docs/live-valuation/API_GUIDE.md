@@ -5,45 +5,40 @@ This document explains how the Live Portfolio Valuation tool fetches market data
 ## Overview
 
 The tool uses a two-step process to get the Current Market Price (CMP) for a security given its ISIN:
-1. **ISIN to Ticker**: Maps the ISIN code (e.g., `INF209K01157`) to a Yahoo Finance Ticker symbol (e.g., `PARAGPARIKH.NS`).
+1. **ISIN to Ticker**: Maps the ISIN code (e.g., `INE002A01018`) to a Ticker symbol (e.g., `RELIANCE.NS`).
 2. **Ticker to Price**: Fetches the latest price for that Ticker.
 
 ## APIs Used
 
-### 1. Yahoo Finance Search API
-Used to find the ticker symbol for a given ISIN.
+### 1. Indian Stock Market Search API
+Used to find the ticker symbol for a given ISIN if not found in the local mapping.
 
-- **URL**: `https://query2.finance.yahoo.com/v1/finance/search?q={ISIN}`
+- **URL**: `https://nse-api-ruby.vercel.app/search?q={ISIN}`
 - **Method**: GET
-- **Response**: A JSON object containing a `quotes` array. The first quote's `symbol` is used.
+- **Response**: A JSON object containing a `results` array.
 
-### 2. Financial Modeling Prep Profile API
+### 2. Indian Stock Market Stock API
 Used to get the real-time market price for a ticker symbol.
 
-- **URL**: `https://financialmodelingprep.com/stable/profile?symbol={TICKER}&apikey={API_KEY}`
+- **URL**: `https://nse-api-ruby.vercel.app/stock?symbol={TICKER}&res=num`
 - **Method**: GET
-- **Response**: A JSON array containing an object with a `price` property. We use `data[0].price`.
+- **Response**: A JSON object containing a `data` object with properties like `last_price` and `percent_change`.
 
-**Note**: The API Key is provided by the user via the input field in the tool's interface.
+## ISIN Mapping Fallback
 
-## CORS Proxy
-
-Since these APIs do not support CORS (Cross-Origin Resource Sharing) for direct browser requests, we use a proxy:
-
-- **Proxy**: `https://api.allorigins.win/raw?url=`
-- **Usage**: The target API URL is encoded and appended to the proxy URL.
+The tool also uses a local file `docs/assets/EQUITY_L.csv` to map ISINs to symbols. This is the primary method for resolving ISINs.
 
 ## Rate Limiting and Performance
 
-To avoid being blocked by Yahoo Finance or the proxy, the following measures are implemented:
-- **Delay**: A 500ms delay is introduced between sequential API calls.
-- **Caching**: Ticker symbols are cached in memory once fetched for an ISIN.
+To avoid being blocked or rate limited, the following measures are implemented:
+- **Delay**: A 200ms delay is introduced between sequential API calls.
+- **Caching**: Ticker symbols and price data (valid for 1 hour) are cached in the browser's `localStorage`.
 - **Incremental Updates**: The UI updates row-by-row as prices are received.
 
 ## Error Handling
 
 The tool provides simplified error messages in the "Status / Error" column:
-- **"Symbol not found for this ISIN"**: The Search API couldn't find a matching ticker.
-- **"Price data not available"**: The Profile API returned no price data for the ticker.
-- **"API returned 429"**: Too many requests (Rate Limited).
+- **"Ticker not found"**: Both the Search API and local mapping failed to find a matching ticker.
+- **"Price not available"**: The Stock API returned no price data for the ticker.
+- **"API returned {status}"**: The API returned an error status (e.g., 500).
 - **"Network Error"**: Connection issues.

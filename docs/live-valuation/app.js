@@ -104,12 +104,18 @@ async function getTicker(isin) {
 }
 
 /**
- * Update the valuation results using Batch API
+ * Update the valuation results by fetching latest prices
  */
 async function updateValuation() {
     if (portfolioData.length === 0) return;
 
     resultDiv.innerHTML = 'Refreshing prices...';
+
+    // Helper to robustly extract numeric values from API response
+    const extractValue = (obj, key) => {
+        if (!obj || obj[key] === undefined || obj[key] === null) return null;
+        return (typeof obj[key] === 'object' && obj[key].value !== undefined) ? obj[key].value : obj[key];
+    };
 
     // 1. Resolve all tickers first
     for (const item of portfolioData) {
@@ -164,23 +170,35 @@ async function updateValuation() {
                 const data = await response.json();
 
                 if (data.status === 'success' && data.data) {
-                    const stock = data.data;
-                    const priceData = {
-                        price: stock.last_price,
-                        changesPercentage: stock.percent_change,
-                        timestamp: Date.now()
-                    };
-                    localStorage.setItem(`price_${ticker}`, JSON.stringify(priceData));
+                    // Handle potential double-nesting and robustly extract values
+                    let stock = data.data;
+                    if (stock.data && (stock.data.last_price !== undefined || stock.data.percent_change !== undefined)) {
+                        stock = stock.data;
+                    }
 
-                    // Update all items in portfolio with this ticker
-                    portfolioData.forEach(item => {
-                        if (item.ticker === ticker) {
-                            item.price = stock.last_price;
-                            item.changesPercentage = stock.percent_change;
-                            item.total = item.quantity * item.price;
-                            item.status = 'Success';
-                        }
-                    });
+                    const lastPrice = extractValue(stock, 'last_price');
+                    const percentChange = extractValue(stock, 'percent_change');
+
+                    if (lastPrice !== null) {
+                        const priceData = {
+                            price: lastPrice,
+                            changesPercentage: percentChange || 0,
+                            timestamp: Date.now()
+                        };
+                        localStorage.setItem(`price_${ticker}`, JSON.stringify(priceData));
+
+                        // Update all items in portfolio with this ticker
+                        portfolioData.forEach(item => {
+                            if (item.ticker === ticker) {
+                                item.price = lastPrice;
+                                item.changesPercentage = percentChange || 0;
+                                item.total = item.quantity * item.price;
+                                item.status = 'Success';
+                            }
+                        });
+                    } else {
+                        throw new Error('Price data missing in response');
+                    }
                 } else {
                     portfolioData.forEach(item => {
                         if (item.ticker === ticker && item.status === 'Fetching Price') {
