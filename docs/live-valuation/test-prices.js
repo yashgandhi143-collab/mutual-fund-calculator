@@ -57,16 +57,29 @@ async function fetchPrice(symbol) {
 
         const extractValue = (obj, key) => {
             if (!obj || obj[key] === undefined || obj[key] === null) return null;
-            return (typeof obj[key] === 'object' && obj[key].value !== undefined) ? obj[key].value : obj[key];
+            let val = obj[key];
+            if (typeof val === 'object' && val.value !== undefined) {
+                val = val.value;
+            }
+            if (typeof val === 'string') {
+                val = parseFloat(val.replace(/,/g, ''));
+            }
+            return isNaN(val) ? null : val;
         };
 
-        if (data.status === 'success' && data.data) {
-            let stock = data.data;
-            if (stock.data && (stock.data.last_price !== undefined || stock.data.percent_change !== undefined)) {
-                stock = stock.data;
+        if (data.status === 'success') {
+            let stock = null;
+            if (data.data && data.data.last_price !== undefined) {
+                stock = data.data;
+            } else if (data.data && data.data.data && data.data.data.last_price !== undefined) {
+                stock = data.data.data;
+            } else if (Array.isArray(data.stocks) && data.stocks.length > 0) {
+                stock = data.stocks[0];
+            } else if (data.last_price !== undefined) {
+                stock = data;
             }
 
-            const lastPrice = extractValue(stock, 'last_price');
+            const lastPrice = stock ? extractValue(stock, 'last_price') : null;
             if (lastPrice !== null) {
                 return { price: lastPrice, status: 'Success' };
             }
