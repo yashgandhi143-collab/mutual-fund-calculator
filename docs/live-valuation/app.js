@@ -4,8 +4,8 @@
 
 const fileInput = document.getElementById('fileInput');
 const sheetNameInput = document.getElementById('sheetName');
-const apiKeyInput = document.getElementById('apiKey');
 const saveEodBtn = document.getElementById('saveEodBtn');
+const refreshValuationBtn = document.getElementById('refreshValuationBtn');
 const resultDiv = document.getElementById('result');
 const tableContainer = document.getElementById('tableContainer');
 
@@ -15,8 +15,7 @@ let isinToSymbolMap = null;
 
 // Proxy and API configuration
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const FMP_QUOTE_URL = 'https://financialmodelingprep.com/stable/quote?symbol=';
-const FMP_ISIN_URL = 'https://financialmodelingprep.com/stable/search-isin?isin=';
+const API_BASE_URL = 'https://nse-api-ruby.vercel.app';
 
 /**
  * Check if current time is within Indian Market Hours (9:15 AM - 3:30 PM IST)
@@ -80,24 +79,20 @@ async function fetchISINMapping() {
 }
 
 /**
- * Get Ticker from ISIN using FMP Search and NSE Mapping fallback
+ * Get Ticker from ISIN using Search API and NSE Mapping fallback
  */
 async function getTicker(isin) {
-    const apiKey = apiKeyInput.value.trim();
-
-    // Try FMP ISIN Search first (supports global stocks)
-    if (apiKey) {
-        try {
-            const fmpResponse = await fetch(`${FMP_ISIN_URL}${isin}&apikey=${apiKey}`);
-            if (fmpResponse.ok) {
-                const data = await fmpResponse.json();
-                if (data && data.length > 0 && data[0].symbol) {
-                    return data[0].symbol;
-                }
+    // Try Search API first
+    try {
+        const response = await fetch(`${API_BASE_URL}/search?q=${isin}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.results && data.results.length > 0) {
+                return data.results[0].symbol + '.NS';
             }
-        } catch (error) {
-            console.warn(`FMP ISIN search failed for ${isin}, falling back to NSE list:`, error);
         }
+    } catch (error) {
+        console.warn(`Search API failed for ${isin}, falling back to NSE list:`, error);
     }
 
     // Fallback to NSE ISIN mapping
@@ -109,109 +104,116 @@ async function getTicker(isin) {
 }
 
 /**
- * Fetch Current Market Price for a Ticker with 1-hour caching
- */
-async function fetchPrice(ticker) {
-    const apiKey = apiKeyInput.value.trim();
-    if (!apiKey) throw new Error('FMP API Key is required');
-
-    const cacheKey = `price_${ticker}`;
-    const cachedData = localStorage.getItem(cacheKey);
-
-    if (cachedData) {
-        const { price, changesPercentage, timestamp } = JSON.parse(cachedData);
-        const oneHour = 60 * 60 * 1000;
-        if (Date.now() - timestamp < oneHour) {
-            console.log(`Using cached price for ${ticker}`);
-            return { price, changesPercentage, fromCache: true };
-        }
-    }
-
-    try {
-        const response = await fetch(`${FMP_QUOTE_URL}${ticker}&apikey=${apiKey}`);
-        if (!response.ok) throw new Error(`Price API returned ${response.status}`);
-        const data = await response.json();
-        if (data && data.length > 0 && data[0].price !== undefined) {
-            const priceData = {
-                price: data[0].price,
-                changesPercentage: data[0].changesPercentage || 0,
-                timestamp: Date.now()
-            };
-            localStorage.setItem(cacheKey, JSON.stringify(priceData));
-            return { ...priceData, fromCache: false };
-        }
-        throw new Error('Price data not available');
-    } catch (error) {
-        throw error;
-    }
-}
-
-/**
- * Update the valuation results
+ * Update the valuation results using Batch API
  */
 async function updateValuation() {
     if (portfolioData.length === 0) return;
 
     resultDiv.innerHTML = 'Refreshing prices...';
 
-    // Initialize statuses if not present
-    portfolioData.forEach(item => {
-        if (!item.status) item.status = 'Pending';
-        if (!item.error) item.error = '';
-    });
-
-    // Initial display
-    displayResults(calculateGrandTotal(portfolioData), portfolioData);
-
+    // 1. Resolve all tickers first
     for (const item of portfolioData) {
-        item.status = 'Fetching';
-        item.error = '';
-        displayResults(calculateGrandTotal(portfolioData), portfolioData);
-
-        try {
-            let ticker = item.ticker;
-            if (!ticker) {
-                ticker = await getTicker(item.isin);
-                item.ticker = ticker; // Cache it
+        if (!item.ticker) {
+            try {
+                item.status = 'Fetching Ticker';
+                displayResults(calculateGrandTotal(portfolioData), portfolioData);
+                item.ticker = await getTicker(item.isin);
+            } catch (error) {
+                item.status = 'Error';
+                item.error = 'Ticker not found';
             }
+        }
+    }
 
-            const { price, changesPercentage, fromCache } = await fetchPrice(ticker);
+    // 2. Identify tickers that need updating (not in cache or expired)
+    const oneHour = 60 * 60 * 1000;
+    const tickersToFetch = [];
 
-            if (price !== null) {
+    portfolioData.forEach(item => {
+        if (!item.ticker) return;
+
+        const cacheKey = `price_${item.ticker}`;
+        const cachedData = localStorage.getItem(cacheKey);
+
+        if (cachedData) {
+            const { price, changesPercentage, timestamp } = JSON.parse(cachedData);
+            if (Date.now() - timestamp < oneHour) {
                 item.price = price;
                 item.changesPercentage = changesPercentage;
                 item.total = item.quantity * price;
                 item.status = 'Success';
-            } else {
-                item.total = 0;
-                item.status = 'Error';
-                item.error = 'Price not available';
+                return;
+            }
+        }
+        tickersToFetch.push(item.ticker);
+        item.status = 'Fetching Price';
+    });
+
+    displayResults(calculateGrandTotal(portfolioData), portfolioData);
+
+    // 3. Batch Fetch Prices
+    if (tickersToFetch.length > 0) {
+        try {
+            // Remove duplicates for the API call
+            const uniqueTickers = [...new Set(tickersToFetch)];
+            const response = await fetch(`${API_BASE_URL}/stock/list?symbols=${uniqueTickers.join(',')}&res=num`);
+
+            if (!response.ok) throw new Error(`API returned ${response.status}`);
+            const data = await response.json();
+
+            if (data.status === 'success' && data.stocks) {
+                data.stocks.forEach(stock => {
+                    const priceData = {
+                        price: stock.last_price,
+                        changesPercentage: stock.percent_change,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(`price_${stock.ticker}`, JSON.stringify(priceData));
+
+                    // Update all items in portfolio with this ticker
+                    portfolioData.forEach(item => {
+                        if (item.ticker === stock.ticker) {
+                            item.price = stock.last_price;
+                            item.changesPercentage = stock.percent_change;
+                            item.total = item.quantity * item.price;
+                            item.status = 'Success';
+                        }
+                    });
+                });
             }
 
-            // Rate limiting: wait 500ms between requests ONLY if we didn't use cache
-            if (!fromCache) await delay(500);
+            // Mark remaining as error if not found in response
+            portfolioData.forEach(item => {
+                if (item.status === 'Fetching Price') {
+                    item.status = 'Error';
+                    item.error = 'Price not available';
+                }
+            });
 
         } catch (error) {
-            console.error(`Error updating valuation for ${item.isin}:`, error);
-            item.total = 0;
-            item.status = 'Error';
-            item.error = error.message;
+            console.error('Batch fetch failed:', error);
+            portfolioData.forEach(item => {
+                if (item.status === 'Fetching Price') {
+                    item.status = 'Error';
+                    item.error = error.message;
+                }
+            });
         }
-
-        // Recalculate weights and impacts based on CURRENT total of successfully fetched items
-        const currentGrandTotal = calculateGrandTotal(portfolioData);
-        portfolioData.forEach(row => {
-            if (row.status === 'Success' && currentGrandTotal > 0) {
-                row.weightage = (row.total / currentGrandTotal) * 100;
-                row.impact = (row.weightage / 100) * row.changesPercentage;
-            } else {
-                row.weightage = 0;
-                row.impact = 0;
-            }
-        });
-
-        displayResults(currentGrandTotal, portfolioData);
     }
+
+    // 4. Final Recalculation and Display
+    const currentGrandTotal = calculateGrandTotal(portfolioData);
+    portfolioData.forEach(row => {
+        if (row.status === 'Success' && currentGrandTotal > 0) {
+            row.weightage = (row.total / currentGrandTotal) * 100;
+            row.impact = (row.weightage / 100) * row.changesPercentage;
+        } else {
+            row.weightage = 0;
+            row.impact = 0;
+        }
+    });
+
+    displayResults(currentGrandTotal, portfolioData);
 }
 
 /**
@@ -412,6 +414,19 @@ saveEodBtn.addEventListener('click', () => {
     } else {
         alert('No valuation data to save.');
     }
+});
+
+/**
+ * Handle Refresh Valuation
+ */
+refreshValuationBtn.addEventListener('click', () => {
+    // Clear price cache to force fresh data
+    portfolioData.forEach(item => {
+        if (item.ticker) {
+            localStorage.removeItem(`price_${item.ticker}`);
+        }
+    });
+    updateValuation();
 });
 
 // Auto-refresh logic
