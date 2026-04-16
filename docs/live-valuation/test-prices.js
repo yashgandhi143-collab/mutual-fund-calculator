@@ -54,8 +54,22 @@ async function fetchPrice(symbol) {
         const response = await fetch(`${API_BASE_URL}/stock?symbol=${ticker}&res=num`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        if (data.status === 'success' && data.data && data.data.last_price !== undefined) {
-            return { price: data.data.last_price, status: 'Success' };
+
+        const extractValue = (obj, key) => {
+            if (!obj || obj[key] === undefined || obj[key] === null) return null;
+            return (typeof obj[key] === 'object' && obj[key].value !== undefined) ? obj[key].value : obj[key];
+        };
+
+        if (data.status === 'success' && data.data) {
+            let stock = data.data;
+            if (stock.data && (stock.data.last_price !== undefined || stock.data.percent_change !== undefined)) {
+                stock = stock.data;
+            }
+
+            const lastPrice = extractValue(stock, 'last_price');
+            if (lastPrice !== null) {
+                return { price: lastPrice, status: 'Success' };
+            }
         }
         return { price: null, status: 'Not Found' };
     } catch (error) {
