@@ -49,9 +49,8 @@ function parseCSV(text) {
 }
 
 async function fetchPrice(symbol) {
-    const ticker = `${symbol}.NS`;
     try {
-        const response = await fetch(`${API_BASE_URL}/stock?symbol=${ticker}&res=num`);
+        const response = await fetch(`${API_BASE_URL}/equityQuote?symbol=${symbol}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
 
@@ -67,22 +66,10 @@ async function fetchPrice(symbol) {
             return isNaN(val) ? null : val;
         };
 
-        if (data.status === 'success') {
-            let stock = null;
-            if (data.data && data.data.last_price !== undefined) {
-                stock = data.data;
-            } else if (data.data && data.data.data && data.data.data.last_price !== undefined) {
-                stock = data.data.data;
-            } else if (Array.isArray(data.stocks) && data.stocks.length > 0) {
-                stock = data.stocks[0];
-            } else if (data.last_price !== undefined) {
-                stock = data;
-            }
-
-            const lastPrice = stock ? extractValue(stock, 'last_price') : null;
-            if (lastPrice !== null) {
-                return { price: lastPrice, status: 'Success' };
-            }
+        // Use "close" for price as per user request
+        const lastPrice = extractValue(data, 'close');
+        if (lastPrice !== null) {
+            return { price: lastPrice, status: 'Success' };
         }
         return { price: null, status: 'Not Found' };
     } catch (error) {

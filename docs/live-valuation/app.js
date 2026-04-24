@@ -99,7 +99,7 @@ async function fetchISINMapping() {
                 const symbol = cols[0].trim();
                 const isin = cols[6].trim();
                 if (symbol && isin) {
-                    mapping[isin] = symbol + '.NS';
+                    mapping[isin] = symbol;
                 }
             }
         }
@@ -125,7 +125,7 @@ async function getTicker(isin) {
             const data = await response.json();
             logToUI('response', `Search results for ${isin}`, data);
             if (data.status === 'success' && data.results && data.results.length > 0) {
-                return data.results[0].symbol + '.NS';
+                return data.results[0].symbol;
             }
         } else {
             logToUI('error', `Search API failed for ${isin}`, `Status: ${response.status}`);
@@ -196,7 +196,7 @@ async function updateValuation() {
                 item.status = 'Fetching Price';
                 displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
-                const url = `${API_BASE_URL}/stock?symbol=${item.ticker}&res=num`;
+                const url = `${API_BASE_URL}/equityQuote?symbol=${item.ticker}`;
                 logToUI('request', `Fetching price for: ${item.ticker}`, url);
 
                 const response = await fetch(url);
@@ -205,38 +205,26 @@ async function updateValuation() {
                 const data = await response.json();
                 logToUI('response', `Price data for ${item.ticker}`, data);
 
-                if (data.status === 'success') {
-                    let stock = null;
-
-                    // Robustly find the stock data object in common API response structures
-                    if (data.data && data.data.last_price !== undefined) {
-                        stock = data.data;
-                    } else if (data.data && data.data.data && data.data.data.last_price !== undefined) {
-                        stock = data.data.data;
-                    } else if (Array.isArray(data.stocks) && data.stocks.length > 0) {
-                        stock = data.stocks[0];
-                    } else if (data.last_price !== undefined) {
-                        stock = data;
-                    }
-
-                    if (stock) {
-                        lastPrice = extractValue(stock, 'last_price');
-                        percentChange = extractValue(stock, 'percent_change') || 0;
-                    }
-
-                    if (lastPrice !== null) {
-                        const priceData = {
-                            price: lastPrice,
-                            changesPercentage: percentChange,
-                            timestamp: Date.now()
-                        };
-                        localStorage.setItem(cacheKey, JSON.stringify(priceData));
-                        item.status = 'Success';
-                    } else {
-                        throw new Error('Price data missing in response');
-                    }
+                // Use "close" for price as per user request
+                lastPrice = extractValue(data, 'close');
+                // Calculate percentage change if open and close are available
+                const openPrice = extractValue(data, 'open');
+                if (lastPrice !== null && openPrice !== null && openPrice !== 0) {
+                    percentChange = ((lastPrice - openPrice) / openPrice) * 100;
                 } else {
-                    throw new Error('Invalid API response structure');
+                    percentChange = 0;
+                }
+
+                if (lastPrice !== null) {
+                    const priceData = {
+                        price: lastPrice,
+                        changesPercentage: percentChange,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(cacheKey, JSON.stringify(priceData));
+                    item.status = 'Success';
+                } else {
+                    throw new Error('Price data (close) missing in response');
                 }
             }
 
