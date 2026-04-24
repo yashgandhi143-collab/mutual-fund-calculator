@@ -5,7 +5,7 @@ This document explains how the Live Portfolio Valuation tool fetches market data
 ## Overview
 
 The tool uses a two-step process to get the Current Market Price (CMP) for a security given its ISIN:
-1. **ISIN to Ticker**: Maps the ISIN code (e.g., `INE002A01018`) to a Ticker symbol (e.g., `RELIANCE.NS`).
+1. **ISIN to Ticker**: Maps the ISIN code (e.g., `INE002A01018`) to a Ticker symbol (e.g., `RELIANCE`).
 2. **Ticker to Price**: Fetches the latest price for that Ticker.
 
 ## APIs Used
@@ -17,12 +17,23 @@ Used to find the ticker symbol for a given ISIN if not found in the local mappin
 - **Method**: GET
 - **Response**: A JSON object containing a `results` array.
 
-### 2. Indian Stock Market Stock API
+### 2. Indian Stock Market Equity Quote API
 Used to get the real-time market price for a ticker symbol.
 
-- **URL**: `https://nse-api-ruby.vercel.app/stock?symbol={TICKER}&res=num`
+- **URL**: `https://nse-api-ruby.vercel.app/equityQuote?symbol={TICKER}`
 - **Method**: GET
-- **Response**: A JSON object containing a `data` object with properties like `last_price` and `percent_change`.
+- **Response**: A JSON object containing OCHLV data.
+  ```json
+  {
+    "date": "16-Oct-2023 16:00:00",
+    "open": 1432.1,
+    "high": 1443.6,
+    "low": 1430,
+    "close": 1434.15,
+    "volume": 4850745
+  }
+  ```
+  The tool uses the `close` field for the Current Market Price (CMP).
 
 ## ISIN Mapping Fallback
 
