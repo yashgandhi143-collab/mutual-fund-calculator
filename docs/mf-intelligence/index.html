@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MF Portfolio Intelligence — Wealth Builder</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #1A237E; min-height: 100%; }
+    body { font-family: 'Inter', -apple-system, sans-serif; min-height: 100%; background: linear-gradient(180deg, #0D1B4B 0%, #1A237E 100%); color: #fff; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+    /* Layout */
+    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-top: 24px; }
+    @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    .card { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: #D4AF37; display: flex; align-items: center; gap: 8px; }
+
+    /* Tables & Data */
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; padding: 12px; color: rgba(255,255,255,0.6); font-weight: 600; border-bottom: 2px solid rgba(255,255,255,0.1); }
+    td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+    .badge-buy { background: rgba(52,211,153,0.15); color: #34D399; }
+    .badge-exit { background: rgba(248,113,113,0.15); color: #F87171; }
+    .badge-inc { color: #34D399; }
+    .badge-dec { color: #F87171; }
+
+    /* Alerts */
+    .alert-item { display: flex; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.15); margin-bottom: 12px; }
+    .alert-icon { font-size: 1.25rem; color: #D4AF37; }
+    .alert-content { flex: 1; }
+    .alert-meta { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+    /* Search Bar */
+    .search-container { position: relative; margin-bottom: 24px; }
+    .search-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 14px 16px 14px 44px; color: #fff; font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+    .search-input:focus { border-color: #D4AF37; }
+    .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #D4AF37; font-size: 1.25rem; }
+
+    /* Performance Dashboard */
+    .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .perf-item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; text-align: center; }
+    .perf-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+    .perf-value { font-weight: 700; font-size: 1rem; }
+
+    /* Back link */
+    a.back-link { display: inline-flex; align-items: center; gap: 8px; color: #D4AF37; text-decoration: none; font-size: 0.875rem; font-weight: 600; margin-bottom: 20px; }
+
+    /* News Feed */
+    .news-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .news-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 4px; text-decoration: none; display: block; }
+    .news-title:hover { color: #D4AF37; }
+    .news-source { font-size: 0.75rem; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
+
+    .status-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
+    .status-pass { background: #059669; color: #fff; }
+    .status-fail { background: #DC2626; color: #fff; }
+
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav style="background:#0D1B4B;height:64px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid rgba(212,175,55,0.3);position:sticky;top:0;z-index:100;">
+    <a href="../index.html" style="display:flex;align-items:center;text-decoration:none;">
+      <i class="ph ph-chart-line-up" style="color:#D4AF37;font-size:1.5rem;margin-right:8px;"></i>
+      <span style="color:#D4AF37;font-weight:700;font-size:1.2rem;">Wealth Builder</span>
+      <span style="color:rgba(212,175,55,0.6);font-size:0.85rem;margin-left:12px;">Portfolio Intelligence</span>
+    </a>
+  </nav>
+
+  <div class="container">
+    <a href="../index.html" class="back-link"><i class="ph ph-arrow-left"></i> Back to Dashboard</a>
+
+    <header style="margin-bottom: 32px;">
+      <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">Portfolio Watchdog</h1>
+      <p id="fund-meta-title" style="color: rgba(255,255,255,0.6);">Active monitoring of holdings, manager changes, and performance benchmarks.</p>
+    </header>
+
+    <div class="search-container">
+      <i class="ph ph-magnifying-glass search-icon"></i>
+      <input type="text" class="search-input" placeholder="Search for a fund to analyze (e.g., Parag Parikh Flexi Cap)...">
+    </div>
+
+    <!-- Active Watchlist Funds -->
+    <div style="display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px;">
+      <div class="watchlist-pill" style="background: #D4AF37; color: #0D1B4B; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 0.85rem; white-space: nowrap; cursor: pointer;">Parag Parikh Flexi Cap</div>
+      <div class="watchlist-pill" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 0.85rem; white-space: nowrap; cursor: pointer;">Mirae Asset Large Cap</div>
+      <div class="watchlist-pill" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 0.85rem; white-space: nowrap; cursor: pointer;">Quant Small Cap</div>
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- Main Content Column -->
+      <div class="main-column">
+
+        <!-- Monthly Holdings Change Tracker -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ph ph-arrows-left-right"></i> Monthly Holdings Change Tracker</h3>
+            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Latest Factsheet: Feb 2026 vs Jan 2026</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Stock Name</th>
+                <th>Action</th>
+                <th>New Weight</th>
+                <th>Change</th>
+              </tr>
+            </thead>
+            <tbody id="holdings-body">
+              <!-- Sample data -->
+              <tr>
+                <td>HDFC Bank Ltd.</td>
+                <td><span class="badge badge-buy">NEW BUY</span></td>
+                <td>4.20%</td>
+                <td class="badge-inc">+4.20%</td>
+              </tr>
+              <tr>
+                <td>Reliance Industries</td>
+                <td><span>Increased</span></td>
+                <td>8.45%</td>
+                <td class="badge-inc">+0.85%</td>
+              </tr>
+              <tr>
+                <td>Infosys Ltd.</td>
+                <td><span>Decreased</span></td>
+                <td>5.10%</td>
+                <td class="badge-dec">-1.20%</td>
+              </tr>
+              <tr>
+                <td>ITC Ltd.</td>
+                <td><span class="badge badge-exit">EXITED</span></td>
+                <td>0.00%</td>
+                <td class="badge-dec">-2.45%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sector Weight Change Tracker -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ph ph-chart-pie-slice"></i> Sector Weight Change Tracker</h3>
+            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">±2% Threshold Alert Enabled</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Sector</th>
+                <th>Current Weight</th>
+                <th>Previous Weight</th>
+                <th>Change</th>
+              </tr>
+            </thead>
+            <tbody id="sector-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Performance Dashboard -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ph ph-gauge"></i> Performance Dashboard</h3>
+          </div>
+          <div class="perf-grid">
+            <div class="perf-item">
+              <div class="perf-label">1Y Return</div>
+              <div id="perf-1y" class="perf-value badge-inc">...</div>
+              <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:4px;">Real API Data</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-label">3Y Return (CAGR)</div>
+              <div id="perf-3y" class="perf-value badge-inc">...</div>
+              <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:4px;">Cat Avg: 15.4%</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-label">5Y Return (CAGR)</div>
+              <div id="perf-5y" class="perf-value badge-inc">...</div>
+              <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:4px;">Cat Avg: 16.1%</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-label">Since Inception</div>
+              <div id="perf-si" class="perf-value badge-inc">...</div>
+              <div style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-top:4px;">Benchmark: 14.2%</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <h4 style="font-size:0.9rem; margin-bottom:12px; color:rgba(255,255,255,0.8);">Benchmark Beating History</h4>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <div style="background:rgba(255,255,255,0.05); padding:10px 16px; border-radius:8px; flex:1; min-width:120px;">
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);">5 Year Period</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+                  <span style="font-weight:700;">+5.1%</span>
+                  <span class="status-pill status-pass">PASS</span>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,0.05); padding:10px 16px; border-radius:8px; flex:1; min-width:120px;">
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);">10 Year Period</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+                  <span style="font-weight:700;">+4.8%</span>
+                  <span class="status-pill status-pass">PASS</span>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,0.05); padding:10px 16px; border-radius:8px; flex:1; min-width:120px;">
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);">15 Year Period</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+                  <span style="font-weight:700;">+3.2%</span>
+                  <span class="status-pill status-pass">PASS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar Column -->
+      <div class="sidebar-column">
+
+        <!-- Alerts & Flags -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ph ph-bell-ringing"></i> Intelligence Alerts</h3>
+          </div>
+
+          <div id="alerts-container">
+            <div class="alert-item">
+              <i class="ph ph-user-circle-plus alert-icon"></i>
+              <div class="alert-content">
+                <div style="font-size:0.85rem; font-weight:600;">Fund Manager Change</div>
+                <div style="font-size:0.8rem; color:rgba(255,255,255,0.7); margin-top:2px;">Rajeev Thakkar joined as Co-Manager.</div>
+                <div class="alert-meta">2 days ago • Parag Parikh Flexi Cap</div>
+              </div>
+            </div>
+
+            <div class="alert-item" style="border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.05);">
+              <i class="ph ph-warning-circle alert-icon" style="color:#F87171;"></i>
+              <div class="alert-content">
+                <div style="font-size:0.85rem; font-weight:600;">Asset Allocation Shift</div>
+                <div style="font-size:0.8rem; color:rgba(255,255,255,0.7); margin-top:2px;">Cash levels increased from 4% to 12.5%.</div>
+                <div class="alert-meta">1 week ago • Quant Small Cap</div>
+              </div>
+            </div>
+
+            <div class="alert-item">
+              <i class="ph ph-tag alert-icon"></i>
+              <div class="alert-content">
+                <div style="font-size:0.85rem; font-weight:600;">Name Change Alert</div>
+                <div style="font-size:0.8rem; color:rgba(255,255,255,0.7); margin-top:2px;">Fund renamed from 'Multi Cap' to 'Flexi Cap'.</div>
+                <div class="alert-meta">Mar 2026 • SEBI Reclassification</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fund News Feed -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ph ph-newspaper"></i> Fund Intelligence Feed</h3>
+          </div>
+          <div id="news-feed">
+            <div class="news-item">
+              <a href="#" class="news-title">AMC Outlook: Why we are increasing exposure to power stocks</a>
+              <div class="news-source">
+                <i class="ph ph-globe"></i> Value Research • 4h ago
+              </div>
+            </div>
+            <div class="news-item">
+              <a href="#" class="news-title">SEBI new regulation on small-cap fund liquidity stress test</a>
+              <div class="news-source">
+                <i class="ph ph-globe"></i> MoneyControl • 1d ago
+              </div>
+            </div>
+            <div class="news-item">
+              <a href="#" class="news-title">Interview: Fund manager on portfolio strategy for 2026</a>
+              <div class="news-source">
+                <i class="ph ph-globe"></i> Mint • 2d ago
+              </div>
+            </div>
+          </div>
+          <button style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#D4AF37; padding:10px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer;">View Consolidated Feed</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <footer style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.4);font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.1);margin-top:40px;">
+    © 2026 Wealth Builder — Professional Portfolio Intelligence Dashboard
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
