@@ -115,7 +115,7 @@ async function startTesting() {
             const stock = stocks[i];
 
             // Wait to avoid aggressive rate limiting
-            await delay(200);
+            await delay(3000);
 
             const result = await fetchPrice(stock.symbol);
 
