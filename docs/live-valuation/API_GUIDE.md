@@ -10,10 +10,11 @@ The tool uses a two-step process to get the Current Market Price (CMP) for a sec
 
 ## APIs Used
 
-### 1. NSE India Equity Quote API
-Used to get the real-time market price and daily change for a ticker symbol.
+### 1. NSE India Equity Quote API (via CORS Proxy)
+Used to get the real-time market price and daily change for a ticker symbol. Due to CORS restrictions on the official NSE India domain, requests are routed through a CORS proxy.
 
-- **URL**: `https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ&symbol={TICKER}`
+- **Target URL**: `https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ&symbol={TICKER}`
+- **Proxy used**: `https://corsproxy.io/?url=`
 - **Method**: GET
 - **Response**: A JSON object containing an `equityResponse` array.
   ```json
