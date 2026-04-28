@@ -17,8 +17,7 @@ let isinToSymbolMap = null;
 
 // Proxy and API configuration
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const NSE_API_URL = 'https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ';
-const CORS_PROXY = 'https://corsproxy.io/?url=';
+const API_BASE_URL = 'https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ';
 
 /**
  * Check if current time is within Indian Market Hours (9:15 AM - 3:30 PM IST)
@@ -179,13 +178,11 @@ async function updateValuation() {
                 item.status = 'Fetching Price';
                 displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
-                const targetUrl = `${NSE_API_URL}&symbol=${item.ticker}`;
-                const proxyUrl = `${CORS_PROXY}${encodeURIComponent(targetUrl)}`;
+                const url = `${API_BASE_URL}&symbol=${item.ticker}`;
+                logToUI('request', `Fetching price for: ${item.ticker}`, url);
 
-                logToUI('request', `Fetching price for: ${item.ticker}`, targetUrl);
-
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error(`API returned ${response.status} through proxy`);
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`API returned ${response.status}`);
 
                 const data = await response.json();
                 logToUI('response', `Price data for ${item.ticker}`, data);
@@ -226,10 +223,10 @@ async function updateValuation() {
 
             // Small delay between requests to avoid rate limits
             if (i < portfolioData.length - 1) {
-                await delay(1000);
+                await delay(200);
             }
         } catch (error) {
-            logToUI('error', `Process failed for row ${i + 1}: ${error.message}`, error.stack || error);
+            logToUI('error', `Process failed for row ${i + 1}: ${error.message}`);
             item.status = 'Error';
             item.error = error.message;
             displayResults(calculateGrandTotal(portfolioData), portfolioData);
