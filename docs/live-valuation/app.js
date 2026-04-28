@@ -226,7 +226,7 @@ async function updateValuation() {
 
             // Small delay between requests to avoid rate limits
             if (i < portfolioData.length - 1) {
-                await delay(1000);
+                await delay(3000);
             }
         } catch (error) {
             logToUI('error', `Process failed for row ${i + 1}: ${error.message}`, error.stack || error);
