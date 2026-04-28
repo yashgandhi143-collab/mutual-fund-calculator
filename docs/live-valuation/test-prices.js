@@ -9,7 +9,8 @@ const summaryDiv = document.getElementById('summary');
 const resultsTableContainer = document.getElementById('resultsTableContainer');
 
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const API_BASE_URL = 'https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ';
+const NSE_API_URL = 'https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ';
+const CORS_PROXY = 'https://corsproxy.io/?url=';
 
 let testResults = [];
 let successCount = 0;
@@ -50,8 +51,10 @@ function parseCSV(text) {
 
 async function fetchPrice(symbol) {
     try {
-        const response = await fetch(`${API_BASE_URL}&symbol=${symbol}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const targetUrl = `${NSE_API_URL}&symbol=${symbol}`;
+        const proxyUrl = `${CORS_PROXY}${encodeURIComponent(targetUrl)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status} through proxy`);
         const data = await response.json();
 
         const extractValue = (obj, key) => {
