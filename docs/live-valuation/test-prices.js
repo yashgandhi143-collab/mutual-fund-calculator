@@ -9,7 +9,7 @@ const summaryDiv = document.getElementById('summary');
 const resultsTableContainer = document.getElementById('resultsTableContainer');
 
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const API_BASE_URL = 'https://nse-api-ruby.vercel.app';
+const API_BASE_URL = 'https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ';
 
 let testResults = [];
 let successCount = 0;
@@ -50,7 +50,7 @@ function parseCSV(text) {
 
 async function fetchPrice(symbol) {
     try {
-        const response = await fetch(`${API_BASE_URL}/equityQuote?symbol=${symbol}`);
+        const response = await fetch(`${API_BASE_URL}&symbol=${symbol}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
 
@@ -66,10 +66,12 @@ async function fetchPrice(symbol) {
             return isNaN(val) ? null : val;
         };
 
-        // Use "close" for price as per user request
-        const lastPrice = extractValue(data, 'close');
-        if (lastPrice !== null) {
-            return { price: lastPrice, status: 'Success' };
+        // Extract closePrice from NSE India API response
+        if (data.equityResponse && data.equityResponse[0] && data.equityResponse[0].metaData) {
+            const lastPrice = extractValue(data.equityResponse[0].metaData, 'closePrice');
+            if (lastPrice !== null) {
+                return { price: lastPrice, status: 'Success' };
+            }
         }
         return { price: null, status: 'Not Found' };
     } catch (error) {

@@ -10,30 +10,27 @@ The tool uses a two-step process to get the Current Market Price (CMP) for a sec
 
 ## APIs Used
 
-### 1. Indian Stock Market Search API
-Used to find the ticker symbol for a given ISIN if not found in the local mapping.
+### 1. NSE India Equity Quote API
+Used to get the real-time market price and daily change for a ticker symbol.
 
-- **URL**: `https://nse-api-ruby.vercel.app/search?q={ISIN}`
+- **URL**: `https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ&symbol={TICKER}`
 - **Method**: GET
-- **Response**: A JSON object containing a `results` array.
-
-### 2. Indian Stock Market Equity Quote API
-Used to get the real-time market price for a ticker symbol.
-
-- **URL**: `https://nse-api-ruby.vercel.app/equityQuote?symbol={TICKER}`
-- **Method**: GET
-- **Response**: A JSON object containing OCHLV data.
+- **Response**: A JSON object containing an `equityResponse` array.
   ```json
   {
-    "date": "16-Oct-2023 16:00:00",
-    "open": 1432.1,
-    "high": 1443.6,
-    "low": 1430,
-    "close": 1434.15,
-    "volume": 4850745
+    "equityResponse": [
+      {
+        "metaData": {
+          "closePrice": 782.55,
+          "pChange": -0.94,
+          ...
+        },
+        ...
+      }
+    ]
   }
   ```
-  The tool uses the `close` field for the Current Market Price (CMP).
+  The tool uses `metaData.closePrice` for the Current Market Price (CMP) and `metaData.pChange` for the daily percentage change.
 
 ## ISIN Mapping Fallback
 

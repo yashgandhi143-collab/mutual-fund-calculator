@@ -17,7 +17,7 @@ let isinToSymbolMap = null;
 
 // Proxy and API configuration
 const NSE_CSV_URL = '../assets/EQUITY_L.csv';
-const API_BASE_URL = 'https://nse-api-ruby.vercel.app';
+const API_BASE_URL = 'https://www.nseindia.com/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolData&marketType=N&series=EQ';
 
 /**
  * Check if current time is within Indian Market Hours (9:15 AM - 3:30 PM IST)
@@ -112,30 +112,12 @@ async function fetchISINMapping() {
 }
 
 /**
- * Get Ticker from ISIN using Search API and NSE Mapping fallback
+ * Get Ticker from ISIN using NSE Mapping
  */
 async function getTicker(isin) {
-    // Try Search API first
-    const url = `${API_BASE_URL}/search?q=${isin}`;
-    logToUI('request', `Searching ticker for ISIN: ${isin}`, url);
+    logToUI('request', `Resolving ticker for ISIN: ${isin}`);
 
-    try {
-        const response = await fetch(url);
-        if (response.ok) {
-            const data = await response.json();
-            logToUI('response', `Search results for ${isin}`, data);
-            if (data.status === 'success' && data.results && data.results.length > 0) {
-                return data.results[0].symbol;
-            }
-        } else {
-            logToUI('error', `Search API failed for ${isin}`, `Status: ${response.status}`);
-        }
-    } catch (error) {
-        logToUI('error', `Search API error for ${isin}`, error.message);
-        console.warn(`Search API failed for ${isin}, falling back to NSE list:`, error);
-    }
-
-    // Fallback to NSE ISIN mapping
+    // Use NSE ISIN mapping from local CSV
     const mapping = await fetchISINMapping();
     if (mapping[isin]) {
         return mapping[isin];
@@ -196,7 +178,7 @@ async function updateValuation() {
                 item.status = 'Fetching Price';
                 displayResults(calculateGrandTotal(portfolioData), portfolioData);
 
-                const url = `${API_BASE_URL}/equityQuote?symbol=${item.ticker}`;
+                const url = `${API_BASE_URL}&symbol=${item.ticker}`;
                 logToUI('request', `Fetching price for: ${item.ticker}`, url);
 
                 const response = await fetch(url);
@@ -205,14 +187,13 @@ async function updateValuation() {
                 const data = await response.json();
                 logToUI('response', `Price data for ${item.ticker}`, data);
 
-                // Use "close" for price as per user request
-                lastPrice = extractValue(data, 'close');
-                // Calculate percentage change if open and close are available
-                const openPrice = extractValue(data, 'open');
-                if (lastPrice !== null && openPrice !== null && openPrice !== 0) {
-                    percentChange = ((lastPrice - openPrice) / openPrice) * 100;
+                // Extract closePrice and pChange from NSE India API response
+                if (data.equityResponse && data.equityResponse[0] && data.equityResponse[0].metaData) {
+                    const meta = data.equityResponse[0].metaData;
+                    lastPrice = extractValue(meta, 'closePrice');
+                    percentChange = extractValue(meta, 'pChange') || 0;
                 } else {
-                    percentChange = 0;
+                    throw new Error('Price data missing in API response');
                 }
 
                 if (lastPrice !== null) {
