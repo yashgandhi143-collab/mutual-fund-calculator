@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Visiting Card AI Scanner — Wealth Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar bg-primary">
+    <div class="container-fluid px-4 d-flex align-items-center">
+      <a href="../index.html" class="navbar-brand d-flex align-items-center">
+        <i class="ph ph-chart-line-up me-2"></i>
+        <span>Wealth Builder</span>
+      </a>
+      <span class="navbar-text ms-3 d-none d-md-inline">Visiting Card AI Scanner</span>
+    </div>
+  </nav>
+
+  <main class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card shadow-sm border-0 p-4">
+          <div class="text-center mb-4">
+            <h1 class="h3 fw-bold">Visiting Card AI Scanner</h1>
+            <p class="text-muted">Convert physical cards to digital format with AI extraction</p>
+          </div>
+
+          <div id="setup-step">
+            <div class="text-center py-5">
+              <h5 class="fw-bold mb-4">How many sides do you want to scan?</h5>
+              <div class="d-flex justify-content-center gap-3">
+                <button id="btn-1-side" class="btn btn-primary btn-lg px-5">
+                  <i class="ph ph-copy me-2"></i> 1 Side
+                </button>
+                <button id="btn-2-side" class="btn btn-outline-primary btn-lg px-5">
+                  <i class="ph ph-copy-simple me-2"></i> 2 Sides
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="capture-step" style="display: none;">
+            <div class="text-center">
+              <h5 id="capture-title" class="fw-bold mb-3">Scan Front Side</h5>
+
+              <div class="camera-container mb-4">
+                <video id="video" autoplay playsinline class="camera-preview"></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+              </div>
+
+              <div class="capture-controls mb-4">
+                <button id="btn-capture" class="btn btn-primary px-4 me-2">
+                  <i class="ph ph-camera me-1"></i> Capture Photo
+                </button>
+                <button id="btn-switch-camera" class="btn btn-outline-secondary px-3 me-2">
+                  <i class="ph ph-arrows-clockwise"></i>
+                </button>
+                <label for="file-upload" class="btn btn-outline-primary px-4 cursor-pointer">
+                  <i class="ph ph-upload-simple me-1"></i> Upload File
+                </label>
+                <input type="file" id="file-upload" accept="image/*" style="display:none;">
+              </div>
+
+              <div id="captured-previews" class="d-flex justify-content-center flex-wrap mb-4"></div>
+
+              <div id="capture-actions" style="display: none;">
+                <button id="btn-process" class="btn btn-success btn-lg px-5">
+                  <i class="ph ph-cpu me-2"></i> Process and Extract AI
+                </button>
+                <button id="btn-reset" class="btn btn-link text-muted mt-2 d-block mx-auto">Start Over</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="processing-step" style="display: none;">
+             <div class="text-center py-5">
+               <div class="spinner-border text-primary mb-3" role="status"></div>
+               <h5 class="fw-bold">Processing Card...</h5>
+               <p id="processing-status" class="text-muted">Initializing AI Engine...</p>
+             </div>
+          </div>
+
+          <div id="results-step" style="display: none;">
+            <div class="row">
+              <div class="col-md-6 mb-4">
+                <h5 class="fw-bold mb-3">Digital Card Preview</h5>
+                <div id="digital-card" class="digital-card-preview">
+                  <div id="preview-name" class="digital-card-name">...</div>
+                  <div id="preview-phone" class="digital-card-phone">...</div>
+                  <div id="preview-company" class="mt-2 fw-semibold text-primary">...</div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label d-block mb-2">Additional Attachment (Optional)</label>
+                  <label for="extra-attachment" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="ph ph-paperclip me-1"></i> Add File (PDF, Image, etc.)
+                  </label>
+                  <input type="file" id="extra-attachment" style="display:none;">
+                  <div id="attachment-name" class="small text-muted mt-1 text-center"></div>
+                </div>
+
+                <div class="d-grid gap-2">
+                  <button id="btn-whatsapp-share" class="btn btn-success">
+                    <i class="ph ph-whatsapp-logo me-2"></i> One-Click Share (AI)
+                  </button>
+                  <div id="multi-share-container" class="mt-2" style="display:none;">
+                    <p class="small text-muted mb-2">Share to specific contact:</p>
+                    <div id="contact-share-buttons" class="d-flex flex-wrap gap-2"></div>
+                  </div>
+                  <button id="btn-export-csv" class="btn btn-outline-primary mt-2">
+                    <i class="ph ph-file-csv me-2"></i> Download CSV
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <h5 class="fw-bold mb-3">Extracted Details</h5>
+                <div id="extraction-results" class="card p-3 bg-light border-0">
+                  <!-- Fields will be dynamically added here -->
+                  <div class="field-group">
+                    <div class="field-label">Name</div>
+                    <div id="res-name" class="field-value text-primary fw-bold">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Phone</div>
+                    <div id="res-phone" class="field-value">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Email</div>
+                    <div id="res-email" class="field-value">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Company</div>
+                    <div id="res-company" class="field-value">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Category</div>
+                    <div id="res-category" class="field-value">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Office Timings</div>
+                    <div id="res-timings" class="field-value">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Address</div>
+                    <div id="res-address" class="field-value">...</div>
+                  </div>
+                  <div class="field-group">
+                    <div class="field-label">Reg Number / Social</div>
+                    <div id="res-other" class="field-value">...</div>
+                  </div>
+                </div>
+                <button id="btn-new-scan" class="btn btn-link text-muted mt-3">Scan Another Card</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="py-4 text-center mt-auto border-top bg-white">
+    <div class="container">
+      <p class="text-muted small mb-0">© 2026 Wealth Builder — Professional Tools for Financial Management</p>
+    </div>
+  </footer>
+
+  <script src="scanner.js"></script>
+</body>
+</html>
