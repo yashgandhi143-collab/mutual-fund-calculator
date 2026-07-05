@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // UI Elements
     const setupStep = document.getElementById('setup-step');
+    const selectLang = document.getElementById('select-lang');
     const captureStep = document.getElementById('capture-step');
     const processingStep = document.getElementById('processing-step');
     const resultsStep = document.getElementById('results-step');
@@ -49,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewName = document.getElementById('preview-name');
     const previewPhone = document.getElementById('preview-phone');
     const previewCompany = document.getElementById('preview-company');
+
+    window.displayResults = displayResults;
 
     // Event Listeners
     btn1Side.addEventListener('click', () => {
@@ -167,23 +170,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const processingStatus = document.getElementById('processing-status');
         let fullText = "";
         let layoutData = [];
+        let imageSize = null;
 
         try {
-            // Optimization: Load only English + Hindi by default to save resources,
-            // but we can add more if needed.
-            const worker = await Tesseract.createWorker('eng+hin');
+            const lang = selectLang.value || 'eng+hin';
+            const worker = await Tesseract.createWorker(lang);
 
             for (let i = 0; i < capturedImages.length; i++) {
                 processingStatus.innerText = `Analyzing image ${i + 1} of ${capturedImages.length}...`;
                 const { data } = await worker.recognize(capturedImages[i]);
                 fullText += data.text + "\n";
                 layoutData.push(data.blocks);
+
+                if (i === 0) {
+                    // Get first image dimensions for scaling logic
+                    const img = new Image();
+                    img.src = capturedImages[0];
+                    await new Promise(resolve => img.onload = resolve);
+                    imageSize = { width: img.width, height: img.height };
+                }
             }
 
             await worker.terminate();
 
             processingStatus.innerText = "Extracting details with AI...";
             const extractedData = extractFields(fullText, layoutData);
+            extractedData.imageSize = imageSize;
             displayResults(extractedData);
 
         } catch (err) {
@@ -309,20 +321,28 @@ document.addEventListener('DOMContentLoaded', () => {
         previewPhone.innerText = data.phone[0] || "";
         previewCompany.innerText = data.company !== "Not Found" ? data.company : "";
 
-        // Apply Layout alignment if found
-        if (data.namePos) {
+        // Apply Layout alignment if found with correct scaling
+        if (data.namePos && data.imageSize) {
             const card = document.getElementById('digital-card');
             const cw = card.clientWidth;
             const ch = card.clientHeight;
-            // Rough mapping of OCR coordinates to card preview
+
+            const scaleX = cw / data.imageSize.width;
+            const scaleY = ch / data.imageSize.height;
+
             previewName.style.position = 'absolute';
-            previewName.style.left = (data.namePos.x0 / 10) + 'px';
-            previewName.style.top = (data.namePos.y0 / 10) + 'px';
-        }
-        if (data.phonePos) {
-            previewPhone.style.position = 'absolute';
-            previewPhone.style.left = (data.phonePos.x0 / 10) + 'px';
-            previewPhone.style.top = (data.phonePos.y0 / 10) + 'px';
+            previewName.style.left = (data.namePos.x0 * scaleX) + 'px';
+            previewName.style.top = (data.namePos.y0 * scaleY) + 'px';
+
+            if (data.phonePos) {
+                previewPhone.style.position = 'absolute';
+                previewPhone.style.left = (data.phonePos.x0 * scaleX) + 'px';
+                previewPhone.style.top = (data.phonePos.y0 * scaleY) + 'px';
+            }
+        } else {
+            // Reset to static if no pos found
+            previewName.style.position = 'static';
+            previewPhone.style.position = 'static';
         }
     }
 

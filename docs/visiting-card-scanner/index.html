@@ -36,6 +36,22 @@
 
           <div id="setup-step">
             <div class="text-center py-5">
+              <h5 class="fw-bold mb-4">Select OCR Language</h5>
+              <div class="mb-4 mx-auto" style="max-width: 300px;">
+                <select id="select-lang" class="form-select">
+                  <option value="eng+hin" selected>English + Hindi</option>
+                  <option value="eng">English</option>
+                  <option value="hin">Hindi (हिन्दी)</option>
+                  <option value="spa">Spanish (Español)</option>
+                  <option value="fra">French (Français)</option>
+                  <option value="deu">German (Deutsch)</option>
+                  <option value="jpn">Japanese (日本語)</option>
+                  <option value="chi_sim">Chinese (Simplified)</option>
+                  <option value="ara">Arabic (العربية)</option>
+                </select>
+                <p class="small text-muted mt-2">Multiple languages can be selected via the engine</p>
+              </div>
+
               <h5 class="fw-bold mb-4">How many sides do you want to scan?</h5>
               <div class="d-flex justify-content-center gap-3">
                 <button id="btn-1-side" class="btn btn-primary btn-lg px-5">
