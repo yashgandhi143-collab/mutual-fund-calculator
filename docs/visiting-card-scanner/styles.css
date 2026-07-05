@@ -1,0 +1,91 @@
+/* Custom styles for Visiting Card Scanner */
+
+#capture-step {
+    text-align: center;
+}
+
+.camera-preview {
+    width: 100%;
+    max-width: 640px;
+    background: #000;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.captured-image {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 8px;
+    border: 2px solid var(--color-primary);
+    margin: 10px;
+}
+
+.digital-card-preview {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    aspect-ratio: 1.75 / 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.digital-card-name {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: #1a237e;
+    margin: 0;
+}
+
+.digital-card-phone {
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.field-group {
+    margin-bottom: 15px;
+}
+
+.field-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    font-weight: 700;
+}
+
+.field-value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-success { background: var(--color-success); }
+.status-pending { background: var(--color-warning); }
+
+/* Grid Layout for Digital Card */
+.card-layout-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.card-data-fields {
+    flex: 1;
+    min-width: 300px;
+}
+
+.card-visual-preview {
+    flex: 1;
+    min-width: 300px;
+}
