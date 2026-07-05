@@ -1,0 +1,12 @@
+title: Mutual Fund Calculator
+description: Calculate and visualize your mutual fund investments
+theme: null
+markdown: kramdown
+
+# GitHub Pages configuration
+url: https://yashgandhi143-collab.github.io/mutual-fund-calculator
+baseurl: /mutual-fund-calculator
+
+# Social Media
+social:
+  - https://github.com/yashgandhi143-collab/mutual-fund-calculator
